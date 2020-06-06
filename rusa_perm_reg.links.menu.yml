@@ -1,0 +1,10 @@
+entity.rusa_perm_registration.settings:
+  title: RUSA Perm Registration
+  description: Configure a RUSA Perm Registration entity type
+  route_name:  entity.rusa_perm_registration.settings
+  parent: system.admin_structure
+entity.rusa_perm_registration.collection:
+  title: RUSA Perm Registrations
+  description: List of rusa perm registrations
+  route_name: entity.rusa_perm_registration.collection
+  parent: system.admin_content

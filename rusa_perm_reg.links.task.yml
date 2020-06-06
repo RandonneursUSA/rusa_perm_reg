@@ -1,0 +1,27 @@
+entity.rusa_perm_registration.settings:
+  title: Settings
+  route_name: entity.rusa_perm_registration.settings
+  base_route: entity.rusa_perm_registration.settings
+entity.rusa_perm_registration.view:
+  title: View
+  route_name: entity.rusa_perm_registration.canonical
+  base_route: entity.rusa_perm_registration.canonical
+entity.rusa_perm_registration.edit_form:
+  title: Edit
+  route_name: entity.rusa_perm_registration.edit_form
+  base_route: entity.rusa_perm_registration.canonical
+entity.rusa_perm_registration.delete_form:
+  title: Delete
+  route_name: entity.rusa_perm_registration.delete_form
+  base_route: entity.rusa_perm_registration.canonical
+  weight: 10
+entity.rusa_perm_registration.collection:
+  title: RUSA Perm Registration
+  route_name: entity.rusa_perm_registration.collection
+  base_route: system.admin_content
+  weight: 10
+rusa_perm.reg_tab:
+  title: Permanents
+  route_name: rusa_perm.reg
+  base_route: entity.user.canonical
+  weight: 10

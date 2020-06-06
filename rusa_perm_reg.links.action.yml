@@ -1,0 +1,5 @@
+rusa_perm_registration.add_form:
+  route_name: entity.rusa_perm_registration.add_form
+  title: 'Add rusa perm registration'
+  appears_on:
+    - entity.rusa_perm_registration.collection

@@ -1,0 +1,13 @@
+administer rusa perm registration:
+  title: 'Administer rusa perm registration settings'
+  restrict access: true
+access rusa perm registration overview:
+  title: 'Access rusa perm registration overview page'
+delete rusa perm registration:
+  title: Delete rusa perm registration
+create rusa perm registration:
+  title: Create rusa perm registration
+view rusa perm registration:
+  title: View rusa perm registration
+edit rusa perm registration:
+  title: Edit rusa perm registration

@@ -1,0 +1,16 @@
+entity.rusa_perm_registration.settings:
+  path: 'admin/structure/rusa-perm-registration'
+  defaults:
+    _form: '\Drupal\rusa_perm_reg\Form\RusaPermRegistrationSettingsForm'
+    _title: 'RUSA Perm Registration'
+  requirements:
+    _permission: 'administer rusa perm registration'
+
+rusa_perm.reg:
+  path: '/user/{user}/perms'
+  defaults:
+    _title: 'RUSA Permanents Program'
+    _form: '\Drupal\rusa_perm_reg\Form\RusaPermRegForm'
+  requirements:
+    _permission: 'create rusa perm registration'
+    user: \d+

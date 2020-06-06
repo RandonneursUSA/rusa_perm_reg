@@ -1,0 +1,9 @@
+name: RUSA Perm Registration
+type: module
+description: 'Provides a rusa perm registration entity.'
+package: RUSA
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - rusa_api
+configure: entity.rusa_perm_registration.settings
