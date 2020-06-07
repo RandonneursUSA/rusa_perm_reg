@@ -18,12 +18,15 @@ namespace Drupal\rusa_perm_reg\Form;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Messenger;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\rusa_perm_reg\RusaRegData;
 /**
  * RusaMemberEditForm
  *
@@ -35,6 +38,9 @@ class RusaPermRegForm extends FormBase {
 
   protected $currentUser;
   protected $messenger;
+  protected $entityTypeManager;
+  protected $uinfo;
+  protected $regdata;
 
   /**
    * @getFormID
@@ -49,9 +55,12 @@ class RusaPermRegForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(AccountProxy $current_user) {
+  public function __construct(AccountProxy $current_user, EntityTypeManagerInterface $entityTypeManager) {
     $this->currentUser = $current_user;
     $this->messenger   = \Drupal::messenger();
+		$this->entityTypeManager = $entityTypeManager;
+    $this->uinfo = $this->get_user_info();
+    $this->regdata = new RusaRegData();
   }
 
   /**
@@ -59,7 +68,8 @@ class RusaPermRegForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('current_user')
+      $container->get('current_user'),
+			$container->get('entity_type.manager'),
     );
   }
 
@@ -69,63 +79,122 @@ class RusaPermRegForm extends FormBase {
    *
    */
   public function buildForm(array $form, FormStateInterface $form_state) {  
-   
-    // Get logged in user's RUSA ID
-    $user = User::load($this->currentUser->id());
-    $mid  = $user->get('field_rusa_member_id')->getValue()[0]['value'];
 
-    if (empty($mid)) {
-      // This should never happen as they should get an access denied first
-      $this->messenger->addMessage(t("You must be logged in and have a RUSA # to use this form."), $this->messenger::TYPE_ERROR);
-      $form_state->setRedirect('rusa_home');
-      return;
-    }
-
-    // Build the form
-    $form['perm'] = [
-      '#type'        => 'vertical_tabs',
-      '#default_tab' => 'prog',
-    ];
-
+    // Start the form
     $form['prog'] = [
       '#type'   => 'details',
       '#title'  => t('Program Registration'),
       '#group'  => 'perm',
     ];
 
-    $form['prog']['info'] = [
-      '#type'   => 'item',
-      '#markup' => t('If already registered for the program we will show that here with the expiration date. Else we show what follows'),
-    ];
-
-    $form['prog']['reg'] = [
-      '#type'   => 'item',
-      '#markup' => t('Before you can register to ride a permanent you must register for the program.<br />' .
-                     'The registration is a several step proccess:'),
-    ];
-
-		$form['prog']['steps'] = [
-   		'#theme' => 'item_list',
-      '#list_type' => 'ul',
-      '#title' => 'Registration Steps',
-      '#items' => ['Download Release Form', 'Print, date, sign, scan, and upload the release form', 'Pay annual fee'],
-      '#attributes' => ['class' => ['rusa-list']],
+    // Display member name and # so they know who they are
+		$form['prog']['user'] = [
+			'#type'		=> 'item',
+			'#markup' => t($this->uinfo['name'] . ' RUSA #' . $this->uinfo['mid']),
 		];
 
-
-    $form['ride'] = [
-        '#type'   => 'details',
-        '#title'  => t('Ride Registration'),
-        '#group'  => 'perm',
-     ];
-
-     $form['ride']['info'] = [
-      '#type'   => 'item',
-      '#markup' => t('Instructions for ride registration go here')
-    ];
-
+    // Does registration exist
+    if ($this->regdata->reg_exists()) {
      
-/*
+      // Get registration id
+      $regid = $this->regdata->get_reg_id();
+
+      // Get registration dates
+      $regdates = $this->regdata->get_reg_dates();
+	
+      // Does the waiver exists?
+      if ($this->regdata->waiver_exists()) {
+      
+        // Is Waiver expires
+        if ($this->regdata->waiver_expired()) {
+          // This will probably be a new registration
+          $form['prog']['waiver'] = [
+            '#type'   => 'item',
+            '#markup' => t('Your signed waiver is expired. You need to upload a new one..'),
+          ];
+        }
+      }
+      else {
+        // Waiver does not exists
+      
+        // Upload link for waiver
+        $form['prog']['waiver'] = [
+          '#type'   => 'item',
+          '#markup' => t('Your perm program registaion is not complete. You still need to upload your signed waiver.'),
+        ];
+      }
+
+      // Has payment been received :
+      if (! $this->regdata->payment_received()) {
+        $form['prog']['payment'] = [
+          '#type'   => 'item',
+          '#markup' => t('Your perm program registaion is not complete. You still need to pay the fee.'),
+        ];
+      }
+      
+      // Has registration been approved
+      $approver = $this->regdata->registration_approved();
+      if (! $approver ) {
+        $form['prog']['approval'] = [
+          '#type'   => 'item',
+          '#markup' => t('Your perm program registaion complete and waiting for approval.'),
+        ];
+      }
+    
+      else {
+        // Registration is complete so show it
+
+        // Build a link to view the registration
+		    $reg_link = Link::fromTextAndUrl('Current perm program registration', Url::fromUri('internal:/rusa_perm_registration/' . $regid))->toString();
+        $active_reg = $regdates[0] . ' to ' . $regdates[1];
+
+        $form['prog']['curreg'] = [
+          '#type'   => 'item',
+          '#markup' => t('Your ' . $reg_link . ' is valid from ' . $active_reg . ' Approved by: ' . $approver ),
+        ];
+      }
+    }
+    else {
+      // Display the form to create a new registration.
+
+      // Get instructions from our config settings
+      $instructions = \Drupal::config('rusa_perm_reg.settings')->get('instructions');
+
+		  // Process steps
+      $steps = [
+			  'Download Release Form (logic is added here to detect the current release form and make this download link)', 
+			  'Print, date, sign, and scan the release form.(maybe add a link for some tips on how to scan and prepare for upload)',
+			  'Upload your signed waiver (this will be a file upload field)', 
+			  'Pay annual fee (this will be a link to the store payment form)',
+		  ];
+
+
+      $form['prog']['info'] = [
+        '#type'   => 'item',
+        '#markup' => t('<em>There will be logic here. If the user already has a valid program registration they will see that. ' .
+										 'Else if they have a pending registration they will see that. ' .
+                     'Else they will see the process below.</em>'),
+      ];
+
+
+      $form['prog']['reg'] = [
+        '#type'   => 'item',
+        '#markup' => t($instructions),
+      ];
+
+	  	$form['prog']['steps'] = [
+   	  	'#theme' => 'item_list',
+        '#list_type' => 'ul',
+        '#title' => 'Registration Steps',
+        '#items' => $steps,
+        '#attributes' => ['class' => ['rusa-list']],
+		  ];
+
+  }
+
+    
+/* I'm not sure we'll need to actually submit this form.
+
    // Actions wrapper
     $form['actions'] = [
       '#type'   => 'actions',
@@ -175,5 +244,22 @@ class RusaPermRegForm extends FormBase {
       $this->messenger->addMessage(t("Your changes have been saved."), $this->messenger::TYPE_STATUS);
     }
   }
+
+  /** 
+   * Get user info
+   *
+   */
+  protected function get_user_info() {
+		$user_id   = $this->currentUser->id(); 
+    $user      = User::load($user_id);
+
+    $uinfo['uid'] = $user_id;
+		$uinfo['name'] = $user->get('field_display_name')->getValue()[0]['value'];
+    
+    // Get the user's RUSA #
+    $uinfo['mid'] = $user->get('field_rusa_member_id')->getValue()[0]['value'];
+    return($uinfo);
+ }
+
 
 } // End of class  
