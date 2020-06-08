@@ -25,8 +25,13 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Messenger;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Drupal\file\Entity\File;
+use Drupal\media\entity\Media;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaRegData;
+
+
+
 /**
  * RusaMemberEditForm
  *
@@ -36,11 +41,13 @@ use Drupal\rusa_perm_reg\RusaRegData;
  */
 class RusaPermRegForm extends FormBase {
 
+  protected $settings;
   protected $currentUser;
   protected $messenger;
   protected $entityTypeManager;
   protected $uinfo;
   protected $regdata;
+  protected $release_form;
 
   /**
    * @getFormID
@@ -61,6 +68,7 @@ class RusaPermRegForm extends FormBase {
 		$this->entityTypeManager = $entityTypeManager;
     $this->uinfo = $this->get_user_info();
     $this->regdata = new RusaRegData();
+    $this->settings = \Drupal::config('rusa_perm_reg.settings');
   }
 
   /**
@@ -82,9 +90,8 @@ class RusaPermRegForm extends FormBase {
 
     // Start the form
     $form['prog'] = [
-      '#type'   => 'details',
+      '#type'   => 'fieldset',
       '#title'  => t('Program Registration'),
-      '#group'  => 'perm',
     ];
 
     // Display member name and # so they know who they are
@@ -105,12 +112,12 @@ class RusaPermRegForm extends FormBase {
       // Does the waiver exists?
       if ($this->regdata->waiver_exists()) {
       
-        // Is Waiver expires
+        // Is Waiver expired
         if ($this->regdata->waiver_expired()) {
           // This will probably be a new registration
           $form['prog']['waiver'] = [
             '#type'   => 'item',
-            '#markup' => t('Your signed waiver is expired. You need to upload a new one..'),
+					  '#markup' => t($this->settings->get('expired')),
           ];
         }
       }
@@ -120,7 +127,7 @@ class RusaPermRegForm extends FormBase {
         // Upload link for waiver
         $form['prog']['waiver'] = [
           '#type'   => 'item',
-          '#markup' => t('Your perm program registaion is not complete. You still need to upload your signed waiver.'),
+					'#markup' => t($this->settings->get('no_waiver')),
         ];
       }
 
@@ -128,7 +135,7 @@ class RusaPermRegForm extends FormBase {
       if (! $this->regdata->payment_received()) {
         $form['prog']['payment'] = [
           '#type'   => 'item',
-          '#markup' => t('Your perm program registaion is not complete. You still need to pay the fee.'),
+					'#markup' => t($this->settings->get('no_payment')),
         ];
       }
       
@@ -137,7 +144,7 @@ class RusaPermRegForm extends FormBase {
       if (! $approver ) {
         $form['prog']['approval'] = [
           '#type'   => 'item',
-          '#markup' => t('Your perm program registaion complete and waiting for approval.'),
+					'#markup' => t($this->settings->get('no_approval')),
         ];
       }
     
@@ -152,34 +159,33 @@ class RusaPermRegForm extends FormBase {
           '#type'   => 'item',
           '#markup' => t('Your ' . $reg_link . ' is valid from ' . $active_reg . ' Approved by: ' . $approver ),
         ];
+
+				$form['prog']['ride'] = [
+					'#type' 	=> 'item',
+					'#markup' => t($this->settings->get('good_to_go')),
+				];
       }
     }
     else {
       // Display the form to create a new registration.
 
-      // Get instructions from our config settings
-      $instructions = \Drupal::config('rusa_perm_reg.settings')->get('instructions');
+      // Get release form URI and build a link
+      $this->release_form  = $this->regdata->get_release_form();
+      $url = file_create_url($this->release_form['uri']);
+		  $release_link = Link::fromTextAndUrl('Dowload Release Form', Url::fromUri($url,['attributes' => ['target' => '_blank']]))->toString();
 
 		  // Process steps
       $steps = [
-			  'Download Release Form (logic is added here to detect the current release form and make this download link)', 
+        $release_link,
 			  'Print, date, sign, and scan the release form.(maybe add a link for some tips on how to scan and prepare for upload)',
-			  'Upload your signed waiver (this will be a file upload field)', 
-			  'Pay annual fee (this will be a link to the store payment form)',
+			  'Upload your signed release form here.', 
+			  'When you submit this form your will be redirected to our payment portal to pay your annual fee.',
 		  ];
-
-
-      $form['prog']['info'] = [
-        '#type'   => 'item',
-        '#markup' => t('<em>There will be logic here. If the user already has a valid program registration they will see that. ' .
-										 'Else if they have a pending registration they will see that. ' .
-                     'Else they will see the process below.</em>'),
-      ];
 
 
       $form['prog']['reg'] = [
         '#type'   => 'item',
-        '#markup' => t($instructions),
+        '#markup' => t($this->settings->get('instructions')),
       ];
 
 	  	$form['prog']['steps'] = [
@@ -190,11 +196,19 @@ class RusaPermRegForm extends FormBase {
         '#attributes' => ['class' => ['rusa-list']],
 		  ];
 
-  }
+      $form['prog']['waiver'] = [
+        '#type' 						=> 'managed_file',
+        '#title' 						=> t('Upload your signed release form.'),
+    		'#upload_location'  => 'public://waivers/' . $this->uinfo['mid'] . '/',
+    		'#multiple'         => FALSE,
+    		'#description'      => t('Allowed extensions: pdf png jpg jpeg'),
+    		'#upload_validators'    => [
+      		'file_validate_extensions'    => array('pdf png jpg jpeg'),
+      		'file_validate_size'          => array(25600000)
+    		],
+      ];
 
     
-/* I'm not sure we'll need to actually submit this form.
-
    // Actions wrapper
     $form['actions'] = [
       '#type'   => 'actions',
@@ -209,10 +223,9 @@ class RusaPermRegForm extends FormBase {
         '#value' => 'Submit',
       ],
    ];
-*/
-    // Attach the Javascript and CSS, defined in rusa_rba.libraries.yml.
-    // $form['#attached']['library'][] = 'rusa_api/chosen';
-    $form['#attached']['library'][] = 'rusa_api/rusa_script';
+	}
+    // Attach the Javascript and CSS, defined in rusa_api.libraries.yml.
+    // $form['#attached']['library'][] = 'rusa_api/rusa_script';
     $form['#attached']['library'][] = 'rusa_api/rusa_style';
 
     return $form;
@@ -226,6 +239,11 @@ class RusaPermRegForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
+    if (! $form_state->getValue('waiver')){
+			$form_state->setError($form['waiver'], t('You have not uploaderd your signed waiver.'));
+		}
+
+    // $form_state->setRebuild();
   } // End function verify
 
 
@@ -238,11 +256,49 @@ class RusaPermRegForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $action = $form_state->getTriggeringElement();
     if ($action['#value'] == "Cancel") {
-      $form_state->setRedirect('rusa_home');
+      $form_state->setRedirect('user.page');
     }
     else {
+			// First we create a media entity from the uploaded file
+      // Then we can create the registration entity
+
+    	// Get the fid of the uploaded waiver
+    	$fid = $form_state->getValue('waiver')[0];
+ 
+			// Now we can create a media entity
+			$media = Media::create([
+				'bundle'             => 'waiver',
+				'uid'                => $this->uinfo['uid'],
+				'field_media_file_1' => [
+					'target_id' => $fid,
+					],
+			]);
+
+			// Calulate a name for the Media Entity
+			$waiver_name  = preg_replace('/[^a-zA-Z0-9_-]+/', '-', strtolower($this->uinfo['name']));
+    	$waiver_name .= '-' . $this->uinfo['mid'] . '-signed-waiver'; 
+
+			// Set the name and ave the media entity
+			$media->setName($waiver_name)->setPublished(TRUE)->save();
+
+			// Now it's time to create the registration entity
+			$registration =  \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
+				[
+					'uid'					=> $this->uinfo['uid'],
+					'status'			=> 1,
+					'field_rusa_' => $this->uinfo['mid'],
+					'field_signed_waiver' => [
+						'target_id' => $media->id(),
+					],
+  			],
+			)->save();
+
+
       $this->messenger->addMessage(t("Your changes have been saved."), $this->messenger::TYPE_STATUS);
     }
+    
+    // It is possible that payment is made but the waiver is not valid
+
   }
 
   /** 

@@ -17,6 +17,7 @@
 
 namespace Drupal\rusa_perm_reg;
 
+use Drupal\file\Entity\File;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -56,6 +57,29 @@ class RusaRegData {
     }
     else {
       $this->reg = FALSE;
+    }
+  }
+
+
+  /**
+   * Get current release form
+   *
+   * return uri of file
+   */
+  public function get_release_form() {
+	  $media = \Drupal::entityTypeManager()->getStorage('media');
+    $query_result = $media->getQuery()
+      ->condition('bundle', 'release_form')
+      ->execute();
+    if ($query_result) {
+      $id = array_shift($query_result);
+      $release = $media->load($id);
+      $field   = $release->get('field_media_file');
+      $fid     = $field[0]->getValue()['target_id'];
+      $version = $release->get('field_version')[0]->getValue()['value'];;
+      $file    = File::load($fid);
+      $uri     = $file->get('uri')[0]->getValue()['value'];
+      return([$uri, $version]);
     }
   }
 
