@@ -1,3 +1,11 @@
+# Permanents tab is user form
+rusa_perm.reg_tab:
+  title: Permanents
+  route_name: rusa_perm.reg
+  base_route: entity.user.canonical
+  weight: 10
+
+# Enity rusa_perm_registration
 entity.rusa_perm_registration.settings:
   title: Settings
   route_name: entity.rusa_perm_registration.settings
@@ -16,12 +24,32 @@ entity.rusa_perm_registration.delete_form:
   base_route: entity.rusa_perm_registration.canonical
   weight: 10
 entity.rusa_perm_registration.collection:
-  title: RUSA Perm Registration
+  title: Perm Program Registration
   route_name: entity.rusa_perm_registration.collection
-  base_route: system.admin_content
+  base_route: entity.rusa.content
   weight: 10
-rusa_perm.reg_tab:
-  title: Permanents
-  route_name: rusa_perm.reg
-  base_route: entity.user.canonical
+
+# Entity rusa_perm_reg_ride  
+entity.rusa_perm_reg_ride.settings:
+  title: Settings
+  route_name: entity.rusa_perm_reg_ride.settings
+  base_route: entity.rusa_perm_reg_ride.settings
+entity.rusa_perm_reg_ride.view:
+  title: View
+  route_name: entity.rusa_perm_reg_ride.canonical
+  base_route: entity.rusa_perm_reg_ride.canonical
+entity.rusa_perm_reg_ride.edit_form:
+  title: Edit
+  route_name: entity.rusa_perm_reg_ride.edit_form
+  base_route: entity.rusa_perm_reg_ride.canonical
+entity.rusa_perm_reg_ride.delete_form:
+  title: Delete
+  route_name: entity.rusa_perm_reg_ride.delete_form
+  base_route: entity.rusa_perm_reg_ride.canonical
   weight: 10
+entity.rusa_perm_reg_ride.collection:
+  title: Perm Ride Registration
+  route_name: entity.rusa_perm_reg_ride.collection
+  base_route: entity.rusa.content 
+  weight: 10
+

@@ -14,25 +14,25 @@ use Drupal\user\UserInterface;
  * Defines the rusa perm registration entity class.
  *
  * @ContentEntityType(
- *   id = "rusa_perm_registration",
- *   label = @Translation("RUSA Perm Program Registration"),
- *   label_collection = @Translation("RUSA Perm Program Registrations"),
+ *   id = "rusa_perm_reg_ride",
+ *   label = @Translation("RUSA Perm Ride Registration"),
+ *   label_collection = @Translation("RUSA Perm Ride Registrations"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\rusa_perm_reg\RusaPermRegistrationListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "access" = "Drupal\rusa_perm_reg\RusaPermRegistrationAccessControlHandler",
  *     "form" = {
- *       "add" = "Drupal\rusa_perm_reg\Form\RusaPermRegistrationForm",
- *       "edit" = "Drupal\rusa_perm_reg\Form\RusaPermRegistrationForm",
+ *       "add" = "Drupal\rusa_perm_reg\Form\RusaPermRegRideForm",
+ *       "edit" = "Drupal\rusa_perm_reg\Form\RusaPermRegRideForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "rusa_perm_registration",
- *   revision_table = "rusa_perm_registration_revision",
+ *   base_table = "rusa_perm_reg_ride",
+ *   revision_table = "rusa_perm_reg_ride_revision",
  *   show_revision_ui = TRUE,
  *   admin_permission = "administer rusa perm registration",
  *   entity_keys = {
@@ -47,16 +47,16 @@ use Drupal\user\UserInterface;
  *     "revision_log_message" = "revision_log"
  *   },
  *   links = {
- *     "add-form" = "/rusa/rusa-perm-registration/add",
- *     "canonical" = "/rusa_perm_registration/{rusa_perm_registration}",
- *     "edit-form" = "/rusa/rusa-perm-registration/{rusa_perm_registration}/edit",
- *     "delete-form" = "/rusa/rusa-perm-registration/{rusa_perm_registration}/delete",
- *     "collection" = "/admin/content/rusa-perm-registration"
+ *     "add-form" = "/rusa/rusa-perm-reg-ride/add",
+ *     "canonical" = "/rusa_perm_reg_ride/{rusa_perm_reg_ride}",
+ *     "edit-form" = "/rusa/rusa-perm-reg-ride/{rusa_perm_reg_ride}/edit",
+ *     "delete-form" = "/rusa/rusa-perm-reg-ride/{rusa_perm_reg_ride}/delete",
+ *     "collection" = "/admin/content/rusa-perm-reg-ride"
  *   },
- *   field_ui_base_route = "entity.rusa_perm_registration.settings"
+ *   field_ui_base_route = "entity.rusa_perm_reg_ride.settings"
  * )
  */
-class RusaPermRegistration extends RevisionableContentEntityBase implements RusaPermRegistrationInterface {
+class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermRegistrationInterface {
 
   use EntityChangedTrait;
 

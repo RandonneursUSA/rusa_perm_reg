@@ -1,15 +1,38 @@
+#entity.rusa.content:
+#  path: '/admin/content/rusa'
+#  defaults:
+#    _title: 'RUSA content'
+#  requirements:
+#    _permission: 'administer rusa perm registration'
+#
+#entity.rusa.settings:
+#  path: '/admin/structure/rusa'
+#  defaults:
+#    _title: 'RUSA configuration'
+#    _form: '\Drupal\rusa_perm_reg\Form\RusaSettingsForm'
+#  requirements:
+#    _permission: 'administer rusa perm registration'
+#
 entity.rusa_perm_registration.settings:
-  path: 'admin/structure/rusa-perm-registration'
+  path: 'admin/structure/rusa/perm-prog-registration'
   defaults:
     _form: '\Drupal\rusa_perm_reg\Form\RusaPermRegistrationSettingsForm'
-    _title: 'RUSA Perm Registration'
+    _title: 'Perm Program Registration'
+  requirements:
+    _permission: 'administer rusa perm registration'
+
+entity.rusa_perm_reg_ride.settings:
+  path: 'admin/structure/rusa/perm-ride-registration'
+  defaults:
+    _form: '\Drupal\rusa_perm_reg\Form\RusaPermRideSettingsForm'
+    _title: 'Perm Ride Registration'
   requirements:
     _permission: 'administer rusa perm registration'
 
 rusa_perm.reg:
   path: '/user/{user}/perms'
   defaults:
-    _title: 'RUSA Permanents Program'
+    _title: 'Permanents Program'
     _form: '\Drupal\rusa_perm_reg\Form\RusaPermRegForm'
   requirements:
     _permission: 'create rusa perm registration'

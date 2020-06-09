@@ -1,5 +1,11 @@
 rusa_perm_registration.add_form:
   route_name: entity.rusa_perm_registration.add_form
-  title: 'Add rusa perm registration'
+  title: 'Add rusa perm program registration'
   appears_on:
     - entity.rusa_perm_registration.collection
+rusa_perm_reg_ride.add_form:
+  route_name: entity.rusa_perm_reg_ride.add_form
+  title: 'Add rusa perm program registration'
+  appears_on:
+    - entity.rusa_perm_reg_ride.collection
+

@@ -1,10 +1,30 @@
+entity.rusa.content:
+    title: RUSA
+    parent: system.admin_content
+    description: 'RUSA content'
+    route_name: entity.rusa_perm_registration.collection
+entity.rusa.settings:
+    title: RUSA
+    parent: system.admin_structure
+    description: 'RUSA configuration'
+    route_name:  entity.rusa_perm_registration.settings
 entity.rusa_perm_registration.settings:
-  title: RUSA Perm Registration
-  description: Configure a RUSA Perm Registration entity type
+  title: Perm Program Registration
+  description: Perm Program Registration settings
   route_name:  entity.rusa_perm_registration.settings
-  parent: system.admin_structure
+  parent: entity.rusa.settings
 entity.rusa_perm_registration.collection:
-  title: RUSA Perm Registrations
-  description: List of rusa perm registrations
+  title: Perm Program Registrations
+  description: List of rusa perm program registrations
   route_name: entity.rusa_perm_registration.collection
-  parent: system.admin_content
+  parent: entity.rusa.content
+entity.rusa_perm_reg_ride.settings:
+  title: Perm Ride Registration
+  description: Perm Ride Registration settings 
+  route_name:  entity.rusa_perm_reg_ride.settings
+  parent: entity.rusa.settings
+entity.rusa_perm_reg_ride.collection:
+  title: Perm Ride Registrations
+  description: List of rusa perm ride registrations
+  route_name: entity.rusa_perm_reg_ride.collection
+  parent: entity.rusa.content
