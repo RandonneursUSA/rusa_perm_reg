@@ -1,0 +1,95 @@
+uuid: 682cc96b-80d5-4b18-a08c-3d248a7940b6
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_approved_by
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_date_approved
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_date_payment_received
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_payment_received
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_registration_year
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_rusa_
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_signed_waiver
+  module:
+    - datetime
+    - datetime_range
+    - media_library
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.default
+targetEntityType: rusa_perm_registration
+bundle: rusa_perm_registration
+mode: default
+content:
+  created:
+    type: datetime_timestamp
+    weight: 9
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_approved_by:
+    weight: 4
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+    type: entity_reference_autocomplete
+    region: content
+  field_date_approved:
+    weight: 5
+    settings: {  }
+    third_party_settings: {  }
+    type: datetime_default
+    region: content
+  field_date_payment_received:
+    weight: 3
+    settings: {  }
+    third_party_settings: {  }
+    type: datetime_default
+    region: content
+  field_payment_received:
+    weight: 2
+    settings:
+      display_label: true
+    third_party_settings: {  }
+    type: boolean_checkbox
+    region: content
+  field_registration_year:
+    weight: 0
+    settings: {  }
+    third_party_settings: {  }
+    type: daterange_default
+    region: content
+  field_rusa_:
+    weight: 6
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+    type: number
+    region: content
+  field_signed_waiver:
+    type: media_library_widget
+    weight: 1
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
+    region: content
+  status:
+    type: boolean_checkbox
+    settings:
+      display_label: false
+    weight: 7
+    region: content
+    third_party_settings: {  }
+  uid:
+    type: entity_reference_autocomplete
+    settings:
+      match_operator: CONTAINS
+      size: 60
+      placeholder: ''
+      match_limit: 10
+    weight: 8
+    region: content
+    third_party_settings: {  }
+hidden: {  }

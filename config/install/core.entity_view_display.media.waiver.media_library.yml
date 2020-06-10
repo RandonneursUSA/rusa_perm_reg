@@ -1,0 +1,32 @@
+uuid: 89a59932-398f-49bc-bc43-c41b6be0c2f7
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.media_library
+    - field.field.media.waiver.field_expired
+    - field.field.media.waiver.field_media_file_1
+    - image.style.medium
+    - media.type.waiver
+  module:
+    - image
+id: media.waiver.media_library
+targetEntityType: media
+bundle: waiver
+mode: media_library
+content:
+  thumbnail:
+    type: image
+    label: hidden
+    settings:
+      image_style: medium
+      image_link: ''
+    weight: 0
+    third_party_settings: {  }
+    region: content
+hidden:
+  created: true
+  field_expired: true
+  field_media_file_1: true
+  name: true
+  uid: true

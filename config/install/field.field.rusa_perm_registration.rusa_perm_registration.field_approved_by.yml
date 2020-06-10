@@ -1,0 +1,37 @@
+uuid: cff64ac1-bdb9-4c73-a80d-a12ae8bd9140
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_registration.field_approved_by
+  module:
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.field_approved_by
+field_name: field_approved_by
+entity_type: rusa_perm_registration
+bundle: rusa_perm_registration
+label: 'Approved by'
+description: 'A reference to the person that approved this registration.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:user'
+  handler_settings:
+    include_anonymous: false
+    filter:
+      type: role
+      role:
+        perm_administrator: perm_administrator
+        administrator: '0'
+        site_author: '0'
+        site_architect: '0'
+        site_manager: '0'
+        rusa_member: '0'
+        rusa_rba: '0'
+    target_bundles: null
+    sort:
+      field: _none
+    auto_create: false
+field_type: entity_reference

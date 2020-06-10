@@ -1,0 +1,26 @@
+uuid: 8773887a-9a07-4117-b44c-b0431a8eedf8
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_registration.field_registration_year
+  module:
+    - datetime_range
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.field_registration_year
+field_name: field_registration_year
+entity_type: rusa_perm_registration
+bundle: rusa_perm_registration
+label: 'Registration Year'
+description: 'The year this registration will be valid for. The registration at the end of this period.'
+required: false
+translatable: false
+default_value:
+  -
+    default_date_type: now
+    default_date: now
+    default_end_date_type: relative
+    default_end_date: '+1 year'
+default_value_callback: ''
+settings: {  }
+field_type: daterange

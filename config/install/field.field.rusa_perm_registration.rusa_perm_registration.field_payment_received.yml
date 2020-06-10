@@ -1,0 +1,24 @@
+uuid: 2c74009b-cb44-4cf5-86c6-5fdc4d717c10
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_registration.field_payment_received
+  module:
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.field_payment_received
+field_name: field_payment_received
+entity_type: rusa_perm_registration
+bundle: rusa_perm_registration
+label: 'Payment received'
+description: 'Verification that payment was received. This will be set by the payment system.'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

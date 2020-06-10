@@ -37,27 +37,27 @@ class RusaRegData {
    * {@inheritdoc}
    */
   public function __construct() {
-    $this->currentUser = \Drupal::currentUser();
+      $this->currentUser = \Drupal::currentUser();
 
-    $this->uid = $this->currentUser->id();
+      $this->uid = $this->currentUser->id();
 
-    //Get registration data
- 		$query = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration');
-    $query_result = $query->getQuery()
-      ->condition('status', 1)
-			->condition('uid', $this->uid) 
-      ->execute();
+      //Get registration data
+      $query = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration');
+      $query_result = $query->getQuery()
+          ->condition('status', 1)
+          ->condition('uid', $this->uid) 
+          ->execute();
 
-		// Load the registration entity
-    if ($query_result) {
-   
-      $id = array_shift($query_result);
-		  $this->reg = $query->load($id);
-      $this->regid = $id;
-    }
-    else {
-      $this->reg = FALSE;
-    }
+      // Load the registration entity
+      if ($query_result) {
+
+          $id = array_shift($query_result);
+          $this->reg = $query->load($id);
+          $this->regid = $id;
+      }
+      else {
+          $this->reg = FALSE;
+      }
   }
 
 
@@ -67,20 +67,20 @@ class RusaRegData {
    * return uri of file
    */
   public function get_release_form() {
-	  $media = \Drupal::entityTypeManager()->getStorage('media');
-    $query_result = $media->getQuery()
-      ->condition('bundle', 'release_form')
-      ->execute();
-    if ($query_result) {
-      $id = array_shift($query_result);
-      $release = $media->load($id);
-      $field   = $release->get('field_media_file');
-      $fid     = $field[0]->getValue()['target_id'];
-      $version = $release->get('field_version')[0]->getValue()['value'];;
-      $file    = File::load($fid);
-      $uri     = $file->get('uri')[0]->getValue()['value'];
-      return([$uri, $version]);
-    }
+      $media = \Drupal::entityTypeManager()->getStorage('media');
+      $query_result = $media->getQuery()
+          ->condition('bundle', 'release_form')
+          ->execute();
+      if ($query_result) {
+          $id = array_shift($query_result);
+          $release = $media->load($id);
+          $field   = $release->get('field_media_file');
+          $fid     = $field[0]->getValue()['target_id'];
+          $version = $release->get('field_version')[0]->getValue()['value'];;
+          $file    = File::load($fid);
+          $uri     = $file->get('uri')[0]->getValue()['value'];
+          return([$uri, $version]);
+      }
   }
 
   /**
@@ -88,9 +88,9 @@ class RusaRegData {
    *
    * Return regid
    */
-   public function get_reg_id(){
-     return $this->regid;
-   }
+  public function get_reg_id(){
+      return $this->regid;
+  }
 
 
   /**
@@ -99,7 +99,7 @@ class RusaRegData {
    * Return boolean
    */
   public function reg_exists() {
-    return $this->reg == FALSE ? FALSE : TRUE;
+      if ($this->reg) return TRUE;
   }
 
   /**
@@ -108,20 +108,23 @@ class RusaRegData {
    * return the registration dates
    */
   public function get_reg_dates() {
-	 $reg_dates = $this->reg->get('field_registration_year')->getValue();
-	 return [$reg_dates[0]['value'], $reg_dates[0]['end_value']];
- }  
+      if ($this->reg) {
+        $reg_dates = $this->reg->get('field_registration_year')->getValue();
+        return [$reg_dates[0]['value'], $reg_dates[0]['end_value']];
+      }
+  }  
 
- /**
-  * Waiver exists
-  *
-  * Return boolean
-  */
+  /**
+   * Waiver exists
+   *
+   * Return boolean
+   */
   public function waiver_exists() {
-    // Check to see if the waiver has been uploaded
-    $this->waiver = $this->reg->get('field_signed_waiver');
-    return $this->waiver->isEmpty() ? FALSE : TRUE;
-    
+      if ($this->reg) {
+        // Check to see if the waiver has been uploaded
+        $this->waiver = $this->reg->get('field_signed_waiver');
+        return $this->waiver->isEmpty() ? FALSE : TRUE;
+      }
   }
 
   /**
@@ -130,10 +133,10 @@ class RusaRegData {
    * Return boolean
    */
   public function waiver_expired() { 
-    //Check to see if the waiver is expired
-    $waiver_file  = $this->waiver->referencedEntities();
-    $expired_flag = $waiver_file[0]->get('field_expired')->getValue();
-    return  $expired_flag[0]['value'] == 1 ? TRUE : FALSE;
+      //Check to see if the waiver is expired
+      $waiver_file  = $this->waiver->referencedEntities();
+      $expired_flag = $waiver_file[0]->get('field_expired')->getValue();
+      return  $expired_flag[0]['value'] == 1 ? TRUE : FALSE;
   }
 
   /**
@@ -141,10 +144,12 @@ class RusaRegData {
    *
    * return boolean
    */
-   public function payment_received() {
-    // Check to see if payment has been received
-    $payment_flag = $this->reg->get('field_payment_received')->getValue();
-    return $payment_flag[0]['value'] == 1 ? TRUE : FALSE;
+  public function payment_received() {
+      if ($this->reg) {
+        // Check to see if payment has been received
+        $payment_flag = $this->reg->get('field_payment_received')->getValue();
+        return $payment_flag[0]['value'] == 1 ? TRUE : FALSE;
+      }
   }
 
   /**
@@ -152,16 +157,18 @@ class RusaRegData {
    *
    * return FALSE or approver's name
    */
-   public function registration_approved() {
-     // Check to see if registration has been approved
-     // And if so by who
-     $approved_by =  $this->reg->get('field_approved_by');
-     if ($approved_by->isEmpty()) {
-       return FALSE;
-     }
-     else {
-       return $approved_by->referencedEntities()[0]->get('field_display_name')->getValue()[0]['value'];
-     }
+  public function registration_approved() {
+      if ($this->reg) {
+        // Check to see if registration has been approved
+        // And if so by who
+        $approved_by =  $this->reg->get('field_approved_by');
+        if ($approved_by->isEmpty()) {
+              return FALSE;
+        }
+        else {
+           return $approved_by->referencedEntities()[0]->get('field_display_name')->getValue()[0]['value'];
+        }
+      }
   }
 
 

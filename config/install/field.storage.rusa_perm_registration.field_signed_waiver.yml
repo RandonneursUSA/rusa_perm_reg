@@ -1,0 +1,20 @@
+uuid: 73cfcf6c-e5b5-4d9c-a478-a06665204c62
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+    - rusa_perm_reg
+id: rusa_perm_registration.field_signed_waiver
+field_name: field_signed_waiver
+entity_type: rusa_perm_registration
+type: entity_reference
+settings:
+  target_type: media
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

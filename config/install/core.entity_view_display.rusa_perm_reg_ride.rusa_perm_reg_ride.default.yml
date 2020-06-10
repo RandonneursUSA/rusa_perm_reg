@@ -1,0 +1,62 @@
+uuid: 93dc82ec-5f15-4db5-b031-5abee0e2ed59
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_date_of_ride
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_perm_number
+  module:
+    - datetime
+    - rusa_perm_reg
+    - user
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.default
+targetEntityType: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+mode: default
+content:
+  created:
+    label: above
+    type: timestamp
+    weight: 20
+    region: content
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+    third_party_settings: {  }
+  field_date_of_ride:
+    weight: 22
+    label: above
+    settings:
+      format_type: medium
+      timezone_override: ''
+    third_party_settings: {  }
+    type: datetime_default
+    region: content
+  field_perm_number:
+    weight: 21
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    type: number_integer
+    region: content
+  status:
+    type: boolean
+    label: above
+    weight: 0
+    settings:
+      format: enabled-disabled
+      format_custom_false: ''
+      format_custom_true: ''
+    region: content
+    third_party_settings: {  }
+  uid:
+    label: above
+    type: author
+    weight: 15
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden: {  }

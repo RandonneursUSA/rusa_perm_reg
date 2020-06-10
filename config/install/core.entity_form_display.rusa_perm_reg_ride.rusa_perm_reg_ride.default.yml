@@ -1,0 +1,32 @@
+uuid: b98915ad-9653-43b7-9968-07266e91456c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_date_of_ride
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_perm_number
+  module:
+    - datetime
+    - rusa_perm_reg
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.default
+targetEntityType: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+mode: default
+content:
+  field_date_of_ride:
+    weight: 0
+    settings: {  }
+    third_party_settings: {  }
+    type: datetime_default
+    region: content
+  field_perm_number:
+    weight: 1
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+    type: number
+    region: content
+hidden:
+  created: true
+  status: true
+  uid: true

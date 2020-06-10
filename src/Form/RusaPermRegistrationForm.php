@@ -23,12 +23,12 @@ class RusaPermRegistrationForm extends ContentEntityForm {
     $logger_arguments = $message_arguments + ['link' => render($link)];
 
     if ($result == SAVED_NEW) {
-      $this->messenger()->addStatus($this->t('New rusa perm registration %label has been created.', $message_arguments));
-      $this->logger('rusa_perm_reg')->notice('Created new rusa perm registration %label', $logger_arguments);
+      $this->messenger()->addStatus($this->t('New rusa perm program registration %label has been created.', $message_arguments));
+      $this->logger('rusa_perm_reg')->notice('Created new rusa perm program registration %label', $logger_arguments);
     }
     else {
-      $this->messenger()->addStatus($this->t('The rusa perm registration %label has been updated.', $message_arguments));
-      $this->logger('rusa_perm_reg')->notice('Updated new rusa perm registration %label.', $logger_arguments);
+      $this->messenger()->addStatus($this->t('The rusa perm program registration %label has been updated.', $message_arguments));
+      $this->logger('rusa_perm_reg')->notice('Updated new rusa perm program registration %label.', $logger_arguments);
     }
 
     $form_state->setRedirect('entity.rusa_perm_registration.canonical', ['rusa_perm_registration' => $entity->id()]);

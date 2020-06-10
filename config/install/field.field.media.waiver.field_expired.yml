@@ -1,0 +1,23 @@
+uuid: b849b7e5-bcfa-480a-82ea-415f7ccd71c8
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_expired
+    - media.type.waiver
+id: media.waiver.field_expired
+field_name: field_expired
+entity_type: media
+bundle: waiver
+label: Expired
+description: 'Has the waiver expired?'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

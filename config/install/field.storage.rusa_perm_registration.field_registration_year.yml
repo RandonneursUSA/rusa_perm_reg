@@ -1,0 +1,20 @@
+uuid: e60e1455-f38b-48b5-9788-b2762a121d17
+langcode: en
+status: true
+dependencies:
+  module:
+    - datetime_range
+    - rusa_perm_reg
+id: rusa_perm_registration.field_registration_year
+field_name: field_registration_year
+entity_type: rusa_perm_registration
+type: daterange
+settings:
+  datetime_type: date
+module: datetime_range
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

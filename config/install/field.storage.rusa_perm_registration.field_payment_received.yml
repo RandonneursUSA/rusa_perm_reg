@@ -1,0 +1,18 @@
+uuid: 05db3710-bea6-4a74-b042-1548acde05e5
+langcode: en
+status: true
+dependencies:
+  module:
+    - rusa_perm_reg
+id: rusa_perm_registration.field_payment_received
+field_name: field_payment_received
+entity_type: rusa_perm_registration
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

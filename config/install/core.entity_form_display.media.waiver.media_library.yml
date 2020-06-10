@@ -1,0 +1,22 @@
+uuid: cd45e44b-4852-4c6c-b421-706e2b3c6fc9
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_form_mode.media.media_library
+    - field.field.media.waiver.field_expired
+    - field.field.media.waiver.field_media_file_1
+    - media.type.waiver
+id: media.waiver.media_library
+targetEntityType: media
+bundle: waiver
+mode: media_library
+content: {  }
+hidden:
+  created: true
+  field_expired: true
+  field_media_file_1: true
+  name: true
+  path: true
+  status: true
+  uid: true

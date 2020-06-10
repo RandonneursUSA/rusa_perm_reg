@@ -1,0 +1,21 @@
+uuid: 6a475f4d-858e-4316-aadd-ef4c16413bf0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_registration.field_date_payment_received
+  module:
+    - datetime
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.field_date_payment_received
+field_name: field_date_payment_received
+entity_type: rusa_perm_registration
+bundle: rusa_perm_registration
+label: 'Date payment received'
+description: 'The date payment was received. This will be set by the payment system.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: datetime

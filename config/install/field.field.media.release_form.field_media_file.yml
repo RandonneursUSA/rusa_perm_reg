@@ -1,0 +1,27 @@
+uuid: 90a64654-1821-432a-afa9-81ef037ae38e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_media_file
+    - media.type.release_form
+  module:
+    - file
+id: media.release_form.field_media_file
+field_name: field_media_file
+entity_type: media
+bundle: release_form
+label: File
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  file_directory: 'release-forms/[date:custom:Y]'
+  file_extensions: pdf
+  max_filesize: ''
+  description_field: false
+  handler: 'default:file'
+  handler_settings: {  }
+field_type: file

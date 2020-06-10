@@ -1,0 +1,23 @@
+uuid: 792983d3-98bc-4d12-a5bb-db3c8ef92183
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_version
+    - media.type.release_form
+id: media.release_form.field_version
+field_name: field_version
+entity_type: media
+bundle: release_form
+label: Version
+description: 'The version of this release form. The format for this is year.number. i.e. 2020.1'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: decimal

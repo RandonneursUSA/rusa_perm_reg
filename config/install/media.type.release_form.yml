@@ -1,0 +1,13 @@
+uuid: 1e67e3b5-6fbc-45ed-9964-1120dc64e79d
+langcode: en
+status: true
+dependencies: {  }
+id: release_form
+label: 'Release Form'
+description: 'This is is PDF document that a member will download and sign in order to register for the Perms Program.'
+source: file
+queue_thumbnail_downloads: false
+new_revision: true
+source_configuration:
+  source_field: field_media_file
+field_map: {  }

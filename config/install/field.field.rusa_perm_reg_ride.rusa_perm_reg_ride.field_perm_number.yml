@@ -1,0 +1,24 @@
+uuid: 77fff9cc-317c-443f-b514-d5ba7973f188
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_reg_ride.field_perm_number
+  module:
+    - rusa_perm_reg
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.field_perm_number
+field_name: field_perm_number
+entity_type: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+label: 'Perm #'
+description: 'The Perm number. You can get this using one of the Perm Search Tools.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

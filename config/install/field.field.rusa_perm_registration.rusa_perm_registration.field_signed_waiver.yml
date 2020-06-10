@@ -1,0 +1,29 @@
+uuid: 7a6e52ec-ed94-486f-8061-688357f499c7
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_registration.field_signed_waiver
+    - media.type.waiver
+  module:
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.field_signed_waiver
+field_name: field_signed_waiver
+entity_type: rusa_perm_registration
+bundle: rusa_perm_registration
+label: 'Signed waiver'
+description: 'This is a reference to the uploaded signed waiver media entity.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      waiver: waiver
+    sort:
+      field: _none
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

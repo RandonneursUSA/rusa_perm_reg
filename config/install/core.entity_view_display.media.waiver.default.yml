@@ -1,0 +1,38 @@
+uuid: d74098ef-4ad1-4c91-9043-837948289d27
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.waiver.field_expired
+    - field.field.media.waiver.field_media_file_1
+    - media.type.waiver
+  module:
+    - file
+id: media.waiver.default
+targetEntityType: media
+bundle: waiver
+mode: default
+content:
+  field_expired:
+    weight: 1
+    label: inline
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    type: boolean
+    region: content
+  field_media_file_1:
+    label: inline
+    weight: 0
+    settings:
+      use_description_as_link_text: true
+    third_party_settings: {  }
+    type: file_default
+    region: content
+hidden:
+  created: true
+  name: true
+  thumbnail: true
+  uid: true

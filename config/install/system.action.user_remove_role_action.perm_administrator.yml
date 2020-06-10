@@ -1,0 +1,14 @@
+uuid: fc13be8e-ccdb-4c68-8527-68bd3c4ff844
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.perm_administrator
+  module:
+    - user
+id: user_remove_role_action.perm_administrator
+label: 'Remove the Perm Administrator role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: perm_administrator

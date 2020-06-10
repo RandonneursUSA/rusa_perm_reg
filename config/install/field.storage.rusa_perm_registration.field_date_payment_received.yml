@@ -1,0 +1,20 @@
+uuid: ad0f2412-976a-4dab-a71b-51bee780f7a0
+langcode: en
+status: true
+dependencies:
+  module:
+    - datetime
+    - rusa_perm_reg
+id: rusa_perm_registration.field_date_payment_received
+field_name: field_date_payment_received
+entity_type: rusa_perm_registration
+type: datetime
+settings:
+  datetime_type: date
+module: datetime
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

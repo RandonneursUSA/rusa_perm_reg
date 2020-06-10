@@ -1,0 +1,14 @@
+uuid: 452e89ec-59bb-4fc7-b7bc-01ad1483929b
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.perm_administrator
+  module:
+    - user
+id: user_add_role_action.perm_administrator
+label: 'Add the Perm Administrator role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: perm_administrator

@@ -1,0 +1,24 @@
+uuid: b55fb785-2161-4d18-beaa-4b48fec596d7
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_reg_ride.field_date_of_ride
+  module:
+    - datetime
+    - rusa_perm_reg
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.field_date_of_ride
+field_name: field_date_of_ride
+entity_type: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+label: 'Date of ride'
+description: 'The date you intend to ride this permanent.'
+required: true
+translatable: false
+default_value:
+  -
+    default_date_type: now
+    default_date: now
+default_value_callback: ''
+settings: {  }
+field_type: datetime

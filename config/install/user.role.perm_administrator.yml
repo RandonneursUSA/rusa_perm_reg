@@ -1,0 +1,19 @@
+uuid: 63385753-a160-4677-8fc1-ec7de9fca035
+langcode: en
+status: true
+dependencies: {  }
+id: perm_administrator
+label: 'Perm Administrator'
+weight: 8
+is_admin: null
+permissions:
+  - 'access rusa perm registration overview'
+  - 'administer rusa perm registration'
+  - 'create release_form media'
+  - 'create rusa perm registration'
+  - 'delete any release_form media'
+  - 'delete own release_form media'
+  - 'edit any release_form media'
+  - 'edit own release_form media'
+  - 'edit rusa perm registration'
+  - 'view rusa perm registration'

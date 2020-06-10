@@ -1,0 +1,14 @@
+uuid: 66257b2c-8ccc-42b5-9bb0-6fc96937a87a
+langcode: en
+status: true
+dependencies: {  }
+id: waiver
+label: Waiver
+description: 'A signed and dated waiver form. Required for riding RUSA events and permanents.'
+source: file
+queue_thumbnail_downloads: false
+new_revision: true
+source_configuration:
+  source_field: field_media_file_1
+field_map:
+  name: name

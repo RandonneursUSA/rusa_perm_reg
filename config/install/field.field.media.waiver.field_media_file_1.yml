@@ -1,0 +1,27 @@
+uuid: 14207579-f0a5-44a9-bf51-99d313d7131f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_media_file_1
+    - media.type.waiver
+  module:
+    - file
+id: media.waiver.field_media_file_1
+field_name: field_media_file_1
+entity_type: media
+bundle: waiver
+label: File
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  file_directory: 'waivers/[date:custom:Y]-[date:custom:m]'
+  file_extensions: 'pdf png jpg jpeg'
+  max_filesize: ''
+  description_field: false
+  handler: 'default:file'
+  handler_settings: {  }
+field_type: file

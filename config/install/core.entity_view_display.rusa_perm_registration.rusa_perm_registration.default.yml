@@ -1,0 +1,89 @@
+uuid: 30a21460-3139-4a98-9904-d883067db197
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_approved_by
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_date_approved
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_date_payment_received
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_payment_received
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_registration_year
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_rusa_
+    - field.field.rusa_perm_registration.rusa_perm_registration.field_signed_waiver
+  module:
+    - datetime
+    - datetime_range
+    - rusa_perm_reg
+id: rusa_perm_registration.rusa_perm_registration.default
+targetEntityType: rusa_perm_registration
+bundle: rusa_perm_registration
+mode: default
+content:
+  field_approved_by:
+    weight: 2
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    type: entity_reference_label
+    region: content
+  field_date_approved:
+    weight: 3
+    label: inline
+    settings:
+      format_type: medium
+      timezone_override: ''
+    third_party_settings: {  }
+    type: datetime_default
+    region: content
+  field_date_payment_received:
+    weight: 5
+    label: inline
+    settings:
+      format_type: medium
+      timezone_override: ''
+    third_party_settings: {  }
+    type: datetime_default
+    region: content
+  field_payment_received:
+    weight: 4
+    label: inline
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    type: boolean
+    region: content
+  field_registration_year:
+    weight: 1
+    label: inline
+    settings:
+      separator: '-'
+      format_type: medium
+      timezone_override: ''
+    third_party_settings: {  }
+    type: daterange_default
+    region: content
+  field_rusa_:
+    weight: 0
+    label: inline
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    type: number_integer
+    region: content
+  field_signed_waiver:
+    type: entity_reference_entity_view
+    weight: 6
+    label: inline
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    region: content
+hidden:
+  created: true
+  status: true
+  uid: true
