@@ -109,7 +109,7 @@ class RusaPermRegForm extends FormBase {
             if ( $this->regdata->waiver_exists()){
                 $waiver_exists = TRUE;
 
-                // Waiver exists check expires
+                // Waiver exists check expired
                 if ($this->regdata->waiver_expired()) {
                     $waiver_expired = TRUE;
                 }
@@ -198,19 +198,19 @@ class RusaPermRegForm extends FormBase {
         // End of status messages
 
         // Start new registration
-        if (!$reg_exists || $waiver_expired) {
+        if (!$reg_exists || !$waiver_exists || $waiver_expired) {
             
             // Get release form URI and build a link
             $this->release_form  = $this->regdata->get_release_form();
             $url = file_create_url($this->release_form['uri']);
-            $release_link = Link::fromTextAndUrl('Dowload Release Form', Url::fromUri($url,['attributes' => ['target' => '_blank']]))->toString();
+            $release_link = Link::fromTextAndUrl('Download Release Form', Url::fromUri($url,['attributes' => ['target' => '_blank']]))->toString();
 
             // Process steps
             $steps = [
                 $release_link,
                 'Print, date, sign, and scan the release form.(maybe add a link for some tips on how to scan and prepare for upload)',
-                'Upload your signed release form here.', 
-                'When you submit this form your will be redirected to our payment portal to pay your annual fee.',
+                'Upload your signed release form.', 
+                'When you submit this form you will be redirected to our payment portal to pay your annual fee.',
             ];
 
 
@@ -269,8 +269,8 @@ class RusaPermRegForm extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-        if (! $form_state->getValue('waiver')){
-            $form_state->setError($form['waiver'], $this->t('You have not uploaderd your signed waiver.'));
+        if (! $form_state->getValue('waiver_upload')){
+            $form_state->setError($form['waiver_upload'], $this->t('You have not uploaderd your signed waiver.'));
         }
 
         // $form_state->setRebuild();
@@ -289,11 +289,12 @@ class RusaPermRegForm extends FormBase {
             $form_state->setRedirect('user.page');
         }
         else {
-            // First we create a media entity from the uploaded file
-            // Then we can create the registration entity
-
             // Get the fid of the uploaded waiver
-            $fid = $form_state->getValue('waiver')[0];
+            $fid = $form_state->getValue('waiver_upload')[0];
+ 
+
+            // Rename the upload file
+
 
             // Now we can create a media entity
             $media = Media::create([

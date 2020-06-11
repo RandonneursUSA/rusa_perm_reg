@@ -33,4 +33,20 @@ function template_preprocess_rusa_perm_registration(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
+  $variables['attributes']['class'][] = 'perm-prog-reg';
 }
+
+/**
+ * Implements hook_preprocess_page_title
+ *
+ * Change page title from the default ID # to something more meaningful
+ *
+ */
+ function rusa_perm_reg_preprocess_page_title(&$variables) {
+    if( $entity = \Drupal::request()->attributes->get('rusa_perm_registration')) {
+        $owner = $entity->getOwner();
+        $variables['title'] = 'Perm Program Registration for ' . $owner->getAccountName(); 
+    }
+ }
+
+
