@@ -2,6 +2,5 @@
   "name": "drupal/rusa_perm_reg",
   "type": "drupal-module",
   "description": "RUSA Perm Registration",
-  "keywords": ["Drupal"],
-  "version": "0.2.1"
+  "keywords": ["Drupal"]
 }

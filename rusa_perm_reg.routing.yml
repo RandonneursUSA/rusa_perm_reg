@@ -1,18 +1,3 @@
-#entity.rusa.content:
-#  path: '/admin/content/rusa'
-#  defaults:
-#    _title: 'RUSA content'
-#  requirements:
-#    _permission: 'administer rusa perm registration'
-#
-#entity.rusa.settings:
-#  path: '/admin/structure/rusa'
-#  defaults:
-#    _title: 'RUSA configuration'
-#    _form: '\Drupal\rusa_perm_reg\Form\RusaSettingsForm'
-#  requirements:
-#    _permission: 'administer rusa perm registration'
-#
 entity.rusa_perm_registration.settings:
   path: 'admin/structure/rusa/perm-prog-registration'
   defaults:
@@ -37,3 +22,6 @@ rusa_perm.reg:
   requirements:
     _permission: 'create rusa perm registration'
     user: \d+
+
+rusa_perm.search:
+  path: '/cgi-bin/permsearch_GF.pl'

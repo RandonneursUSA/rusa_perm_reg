@@ -1,9 +1,1 @@
-instructions: 'Instructions for completing your registration for the permanents program.'
-no_approval: 'Your registration is waiting for approval by a perm administrator.'
-no_payment: 'You have not submitted your payment yet.'
-bad_release: 'You have submitted your signed waiver but it was rejected. You may have used the wrong release form or you may not have signed and dated it properly.'
-no_release: 'You have not submitted your signed waiver.'
-expired: 'Your registration is expired. You must upload a new one.'
-good_to_go: 'Your registration is complete and you are ready to ride.'
-yes_payment: 'Your payment has been recieved.'
-good_release: 'Your release was uploaded successfully.'
+instructions: "Enter the instructions that you want to appear at the top of the Perm Program Registration form here.""

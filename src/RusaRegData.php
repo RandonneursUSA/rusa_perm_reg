@@ -17,48 +17,70 @@
 
 namespace Drupal\rusa_perm_reg;
 
+
+use Drupal\Core\Entity\Query;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 /**
  *
  */
 class RusaRegData {
 
-  protected $currentUser;
-  protected $uid;
-  protected $reg;
-  protected $regid;
-  protected $waiver;
+    protected $currentUser;
+    protected $uid;
+    protected $reg;
+    protected $regid;
+    protected $waiver;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct() {
-      $this->currentUser = \Drupal::currentUser();
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct() {
+        $this->currentUser = \Drupal::currentUser();
+        $this->uid = $this->currentUser->id();
 
-      $this->uid = $this->currentUser->id();
+      
+        // Get a date string suitable for use with entity query.
+        $date = new DrupalDateTime();
+        $date->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
+        $date = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
 
-      //Get registration data
-      $query = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration');
-      $query_result = $query->getQuery()
-          ->condition('status', 1)
-          ->condition('uid', $this->uid) 
-          ->execute();
+        // Get registration data
+        // Query should only get registrations for the current year
+		$storage = \Drupal::service('entity_type.manager')->getStorage('rusa_perm_registration');
+		$query = $storage->getQuery()
+            ->condition('status', 1)
+            ->condition('uid', $this->uid)
+  			->condition('field_registration_year.value', $date, '<=')
+  			->condition('field_registration_year.end_value', $date, '>');
 
-      // Load the registration entity
-      if ($query_result) {
+        $query_result = $query->execute();
 
-          $id = array_shift($query_result);
-          $this->reg = $query->load($id);
-          $this->regid = $id;
-      }
-      else {
-          $this->reg = FALSE;
-      }
-  }
+		// There could be more than one
+		// so check for approval
+        foreach ($query_result as $id) {
+            $this->reg = $storage->load($id);
+            $this->regid = $id;
+        	$approved_by =  $this->reg->get('field_approved_by');
+			if (!empty($approved_by)) {
+				break;
+			}
+        }
+    }
+
+
+    /**
+     * Get the registration entity
+     *
+     */
+     public function get_reg_entity() {
+         return $this->reg;
+    }
 
 
   /**
@@ -72,6 +94,8 @@ class RusaRegData {
           ->condition('bundle', 'release_form')
           ->execute();
       if ($query_result) {
+          // Justing getting the first one now
+          // Need logic to select which one 
           $id = array_shift($query_result);
           $release = $media->load($id);
           $field   = $release->get('field_media_file');
@@ -79,7 +103,7 @@ class RusaRegData {
           $version = $release->get('field_version')[0]->getValue()['value'];;
           $file    = File::load($fid);
           $uri     = $file->get('uri')[0]->getValue()['value'];
-          return([$uri, $version]);
+          return(['id' => $id, 'uri' => $uri, 'version' => $version]);
       }
   }
 
@@ -138,6 +162,19 @@ class RusaRegData {
       $expired_flag = $waiver_file[0]->get('field_expired')->getValue();
       return  $expired_flag[0]['value'] == 1 ? TRUE : FALSE;
   }
+
+  /**
+   * waiver invalid
+   *
+   * Return boolean
+   */
+  public function waiver_invalid() { 
+      //Check to see if the waiver is invalid
+      $waiver_file  = $this->waiver->referencedEntities();
+      $invalid_flag = $waiver_file[0]->get('field_invalid')->getValue();
+      return  $invalid_flag[0]['value'] == 1 ? TRUE : FALSE;
+  }
+
 
   /**
    * payment received

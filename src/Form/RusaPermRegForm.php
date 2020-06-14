@@ -29,8 +29,8 @@ use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaRegData;
-
-
+use Drupal\rusa_api\RusaPermanents;
+use Drupal\rusa_api\Client\RusaClient;
 
 /**
  * RusaMemberEditForm
@@ -43,11 +43,12 @@ class RusaPermRegForm extends FormBase {
 
     protected $settings;
     protected $currentUser;
-    protected $messenger;
+    // protected $messenger;
     protected $entityTypeManager;
     protected $uinfo;
     protected $regdata;
     protected $release_form;
+    protected $regstatus;
 
     /**
      * @getFormID
@@ -64,7 +65,7 @@ class RusaPermRegForm extends FormBase {
      */
     public function __construct(AccountProxy $current_user, EntityTypeManagerInterface $entityTypeManager) {
         $this->currentUser = $current_user;
-        $this->messenger   = \Drupal::messenger();
+       //  $this->messenger   = \Drupal::messenger();
         $this->entityTypeManager = $entityTypeManager;
         $this->uinfo = $this->get_user_info();
         $this->regdata = new RusaRegData();
@@ -99,15 +100,20 @@ class RusaPermRegForm extends FormBase {
         ];
 
         // Set all status to FALSE
-        $good_to_go = $reg_exists = $waiver_exists = $waiver_expired = $payment = $approved = FALSE;
+        $good_to_go = $reg_exists = $waiver_exists = $waiver_expired = $waiver_invalid = $payment = $approved = FALSE;
 
-        // Determine the status of this regustration
+        // Determine the status of this registration
         if ($this->regdata->reg_exists()) {
             $reg_exists = TRUE;
 
             // Reg exists check waiver
             if ( $this->regdata->waiver_exists()){
                 $waiver_exists = TRUE;
+
+                // Waiver exists check invalid
+                if ($this->regdata->waiver_invalid()) {
+                    $waiver_invalid = TRUE;
+                }
 
                 // Waiver exists check expired
                 if ($this->regdata->waiver_expired()) {
@@ -127,7 +133,7 @@ class RusaPermRegForm extends FormBase {
         }
 
         // If all good then ready to ride
-        if ($waiver_exists && !$waiver_expired && $payment && $approved){ 
+        if ($waiver_exists && !$waiver_expired && !$waiver_invalid && $payment && $approved){ 
             $approver = $this->regdata->registration_approved();
 
             // Get registration id
@@ -142,19 +148,95 @@ class RusaPermRegForm extends FormBase {
             // Build a link to view the registration
             $reg_link = Link::fromTextAndUrl('Current perm program registration', Url::fromUri('internal:/rusa_perm_registration/' . $regid))->toString();
             $active_reg = $regdates[0] . ' to ' . $regdates[1];
-
+/*
             $form['curreg'] = [
                 '#type'   => 'item',
                 '#markup' => $this->t('Your ' . $reg_link . ' is valid from ' . $active_reg . ' Approved by: ' . $approver ),
             ];
-
+*/
             $form['ride'] = [
                 '#type' 	=> 'item',
-                '#markup' => $this->t($this->settings['good_to_go']),
+                '#markup'   => $this->t($this->settings['good_to_go']),
             ];
+       
+            if ($perm = $form_state->get('perm')) {
+                // Confirm this route
+                $form['confirm']  = [
+                    '#type'     => 'item',
+                    '#markup'   => $this->t('Is this the perm route you want to register for?'),
+                ];
+
+                $form['confirm_perm'] = [
+                    '#type'     => 'table',
+                    '#header'   => ['Name', 'Km', 'Feet', 'Description'],
+                    '#rows'     => [[$perm->name, $perm->dist, $perm->climbing, $perm->description]],
+                    '#attributes' => ['class' => ['rusa-table']],
+                ];
+
+                $form_state->set('stage', 'ride_confirm');
+            }
+            else {
+                // Display good to go message
+                $form['ride'] = [
+                    '#type' 	=> 'item',
+                    '#markup'   => $this->t($this->settings['good_to_go'] . '  Active dates: ' .  $active_reg),
+                ];
+ 
+                // Display  a link to the route search page
+                $search_link = Link::createFromRoute(
+                        'Search for a permanent route to ride', 
+                        'rusa_perm.search',
+                        ['attributes' => ['target' => '_blank']],  
+                    )->toString();
+
+                $form['search'] = [
+                    '#type'     => 'item',
+                    '#markup'   => $this->t('To register for  a perm ride, first find the route you want to ride using our serch form.' . 
+                    '<br />' . $search_link),
+                ];
+
+
+                $form['instruct2'] = [
+                    '#type'     => 'item',
+                    '#markup'   => $this->t('Once you have the perm route # of the route you want to ride you can proceed with this form.'),
+                ];
+
+                // Display a link to register for a ride or embed form here?
+                $form['route_id'] = [
+                    '#type'      => 'textfield',
+                    '#title'     => $this->t('Perm route #'), 
+                    '#size'      => 4,
+                    '#maxlength' => 4,
+                    '#required'  => 1,
+                ];
+
+                $form['ride_date'] = [
+                    '#type'     => 'date',
+                    '#title'    => $this->t('The date you plan on doing this ride'),
+                    '#required' => 1,
+                ];
+
+                $form_state->set('stage', 'ridereg');
+            }
+
+            // Actions wrapper
+            $form['actions'] = [
+                '#type'   => 'actions',
+                'cancel'  => [
+                    '#type'  => 'submit',
+                    '#value' => 'Cancel',
+                    '#attributes' => ['onclick' => 'if(!confirm("Do you really want to cancel?")){return false;}'],
+                ],
+                'ride_submit' => [
+                    '#type'  => 'submit',
+                    '#value' => 'Register for Perm Ride',
+                ],
+            ];
+ 
         }
         else {
-            //Now display some status messages
+            // Not ready to ride 
+            // display some status messages
             if ($waiver_exists && !$waiver_expired) {        
                 $form['waiver_good'] = [
                         '#type'   => 'item',
@@ -165,6 +247,12 @@ class RusaPermRegForm extends FormBase {
                 $form['waiver_exp'] = [
                     '#type'   => 'item',
                     '#markup' => $this->t($this->settings['expired']),
+                ];
+            }
+             if ($waiver_exists && $waiver_invalid) {        
+                $form['waiver_inv'] = [
+                    '#type'   => 'item',
+                    '#markup' => $this->t($this->settings['bad_release']),
                 ];
             }
             if ($reg_exists && !$waiver_exists) {        
@@ -187,7 +275,7 @@ class RusaPermRegForm extends FormBase {
                 ];
             }
 
-            if ($waiver_exists && !$waiver_expired && $payment && !$approved){ 
+            if ($waiver_exists && !$waiver_expired && !$waiver_invalid && $payment && !$approved){ 
                 // Just waiting approval
                 $form['approval'] = [
                     '#type'   => 'item',
@@ -197,14 +285,13 @@ class RusaPermRegForm extends FormBase {
         }
         // End of status messages
 
-        // Start new registration
-        if (!$reg_exists || !$waiver_exists || $waiver_expired) {
+        // Show the waiver upload form
+        if (!$reg_exists || !$waiver_exists || $waiver_expired || $waiver_invalid) {
             
             // Get release form URI and build a link
             $this->release_form  = $this->regdata->get_release_form();
             $url = file_create_url($this->release_form['uri']);
             $release_link = Link::fromTextAndUrl('Download Release Form', Url::fromUri($url,['attributes' => ['target' => '_blank']]))->toString();
-
             // Process steps
             $steps = [
                 $release_link,
@@ -230,16 +317,17 @@ class RusaPermRegForm extends FormBase {
             $form['waiver_upload'] = [
                  '#type'	=> 'managed_file',
                  '#title'	=> $this->t('Upload your signed release form.'),
-                 '#upload_location'  => 'public://waivers/' . $this->uinfo['mid'] . '/',
+                 '#upload_location'  => 'private://waivers/' . $this->uinfo['mid'] . '/',
                  '#multiple'         => FALSE,
                  '#description'      => t('Allowed extensions: pdf png jpg jpeg'),
                  '#upload_validators'    => [
                     'file_validate_extensions'    => array('pdf png jpg jpeg'),
-                    'file_validate_size'          => array(25600000)
+                    'file_validate_size'          => array(25600000),
                   ],
+                  '#required'   => 1,
             ];
 
-
+            $form_state->set('stage', 'progreg');
             // Actions wrapper
             $form['actions'] = [
                 '#type'   => 'actions',
@@ -250,14 +338,25 @@ class RusaPermRegForm extends FormBase {
                 ],
                 'submit' => [
                     '#type'  => 'submit',
-                    '#value' => 'Submit',
+                    '#value' => 'Register for Perm Program',
                 ],
             ];
-       
-            // Attach the Javascript and CSS, defined in rusa_api.libraries.yml.
-            // $form['#attached']['library'][] = 'rusa_api/rusa_script';
-            $form['#attached']['library'][] = 'rusa_api/rusa_style';
+      
+
+            // Save reg status
+            $this->regstatus = [
+                'reg_exists'     => $reg_exists,
+                'waiver_exists'  => $waiver_exists,
+                'waiver_expired' => $waiver_expired,
+                'waiver_invalid' => $waiver_invalid,
+                'payment'        => $payment,
+                'approved'       => $approved];
         }
+
+        // Attach the Javascript and CSS, defined in rusa_api.libraries.yml.
+        // $form['#attached']['library'][] = 'rusa_api/rusa_script';
+        $form['#attached']['library'][] = 'rusa_api/rusa_style';
+        
         return $form;
     }
 
@@ -268,13 +367,20 @@ class RusaPermRegForm extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+        
+        $stage = $form_state->get('stage');
 
-        if (! $form_state->getValue('waiver_upload')){
-            $form_state->setError($form['waiver_upload'], $this->t('You have not uploaderd your signed waiver.'));
+        // Get info on the selected perm
+        if ($stage == 'ridereg') {
+            // Get the id that was entered
+            $pid = $form_state->getValue('route_id');
+            $permobj = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
+            $perm = $permobj->getPermanent($pid);
+            $form_state->set('perm', $perm);
+
+            $form_state->setRebuild();
         }
-
-        // $form_state->setRebuild();
-    } // End function verify
+    } // End function validate
 
 
     /**
@@ -285,53 +391,82 @@ class RusaPermRegForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $action = $form_state->getTriggeringElement();
+        $stage = $form_state->get('stage');
+        
         if ($action['#value'] == "Cancel") {
             $form_state->setRedirect('user.page');
         }
-        else {
+        elseif ($stage == 'progreg') {
+
+            // Calulate a name for the Media Entity
+            // User's name-signed-release-version
+            $waiver_name  = preg_replace('/[^a-zA-Z0-9_-]+/', '-', strtolower($this->uinfo['name']));
+            $waiver_name .= '-' . $this->uinfo['mid'] . '-signed-waiver-' . $this->release_form['version']; 
+
+
             // Get the fid of the uploaded waiver
             $fid = $form_state->getValue('waiver_upload')[0];
- 
 
-            // Rename the upload file
-
-
-            // Now we can create a media entity
+            // Create a media entity
             $media = Media::create([
                     'bundle'             => 'waiver',
                     'uid'                => $this->uinfo['uid'],
                     'field_media_file_1' => [
-                    'target_id' => $fid,
+                        'target_id' => $fid,
+                    ],
+                    'field_realease_form' => [
+                        $this->release_form['id'],
                     ],
             ]);
-
-            // Calulate a name for the Media Entity
-            $waiver_name  = preg_replace('/[^a-zA-Z0-9_-]+/', '-', strtolower($this->uinfo['name']));
-            $waiver_name .= '-' . $this->uinfo['mid'] . '-signed-waiver'; 
 
             // Set the name and ave the media entity
             $media->setName($waiver_name)->setPublished(TRUE)->save();
 
-            // Now it's time to create the registration entity
-            $registration =  \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
-                [
-                    'uid'		  => $this->uinfo['uid'],
-                    'status'      => 1,
-                    'field_rusa_' => $this->uinfo['mid'],
-                    'field_signed_waiver' => [
-                        'target_id' => $media->id(),
-                    ],
-                ],
-                )->save();
 
+            if ($this->regstatus['reg_exists']) {
+                // Registration exists so we are just going to relace the waiver
+                $reg = $this->regdata->get_reg_entity();
 
-            $this->messenger()->addStatus($this->t('Your perm program registration has been saved', []));
-            // $this->logger('rusa_perm_reg')->notice('Updated new rusa perm ride registration %label.', $logger_arguments);
+                // If the existing waiver is invalid we will delete if first
+                if ($this->regstatus['waiver_invalid']) {
+                    // Get the id of the exiting waiver
+                    $waiver_id = $reg->get('field_signed_waiver')->getValue()[0]['target_id'];
+                    $entity = \Drupal::entityTypeManager()->getStorage('media')->load($waiver_id);
+                    $entity->delete();
+                }
 
-           $form_state->setRedirect('user.page');
+                // Update the registration entity
+                $reg->set('field_signed_waiver',  [ 'target_id' => $media->id() ]);
+                $reg->save();
+            
+            }
+            else {
+                // New registration
+                // Create the registration entity
+                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
+                    [
+                        'uid'		  => $this->uinfo['uid'],
+                        'status'      => 1,
+                        'field_rusa_' => $this->uinfo['mid'],
+                        'field_signed_waiver' => [
+                            'target_id' => $media->id(),
+                        ],
+                    ]);
+                $reg->save();
+
+            }
+            
+            // Post to the Perl script for paypal payment
+            $results = ['mid' => $this->uinfo['mid'], 'permregid' => $reg->id()];
+
+            // Initialize our client to put the results.
+            $client = new RusaClient();
+            $err = $client->perm_pay($results);
+
+            $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
+            $this->logger('rusa_perm_reg')->notice('Updated perm program registration.', []);
+
         }
-
-        // It is possible that payment is made but the waiver is not valid
 
     }
 
