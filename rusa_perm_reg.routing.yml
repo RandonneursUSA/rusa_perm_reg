@@ -23,5 +23,8 @@ rusa_perm.reg:
     _permission: 'create rusa perm registration'
     user: \d+
 
+rusa_perm.pay:
+  path: '/cgi-bin/perm_pay.pl'
+
 rusa_perm.search:
   path: '/cgi-bin/permsearch_GF.pl'

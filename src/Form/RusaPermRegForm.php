@@ -201,7 +201,7 @@ class RusaPermRegForm extends FormBase {
                     '#markup'   => $this->t('Once you have the perm route # of the route you want to ride you can proceed with this form.'),
                 ];
 
-                // Display a link to register for a ride or embed form here?
+                // Display a form to enter a perm # and date 
                 $form['route_id'] = [
                     '#type'      => 'textfield',
                     '#title'     => $this->t('Perm route #'), 
@@ -274,6 +274,25 @@ class RusaPermRegForm extends FormBase {
                    '#markup' => $this->t($this->settings['no_payment']),
                 ];
             }
+
+        
+            if ($waiver_exists && !$payment){ 
+
+                // Display a link to the payment page
+
+                $regid = $this->regdata->get_reg_id();
+                $url = Url::fromRoute('rusa_perm.pay');
+                $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
+                $pay_link = Link::fromTextAndUrl('Proceed to the payment page', $url)->toString();
+
+                $form['paylink'] = [
+                    '#type'     => 'item',
+                    '#markup'   => $pay_link,
+                ];
+
+                $form_state->set('stage', 'regpay');
+            }
+
 
             if ($waiver_exists && !$waiver_expired && !$waiver_invalid && $payment && !$approved){ 
                 // Just waiting approval
