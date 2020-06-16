@@ -475,16 +475,16 @@ class RusaPermRegForm extends FormBase {
 
             }
             
-            // Post to the Perl script for paypal payment
-            $results = ['mid' => $this->uinfo['mid'], 'permregid' => $reg->id()];
-
-            // Initialize our client to put the results.
-            $client = new RusaClient();
-            $err = $client->perm_pay($results);
-
-            $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
-            $this->logger('rusa_perm_reg')->notice('Updated perm program registration.', []);
-
+//            // Post to the Perl script for paypal payment
+//            $results = ['mid' => $this->uinfo['mid'], 'permregid' => $reg->id()];
+//
+//            // Initialize our client to put the results.
+//            $client = new RusaClient();
+//            $err = $client->perm_pay($results);
+//
+//            $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
+//            $this->logger('rusa_perm_reg')->notice('Updated perm program registration.', []);
+//
         }
 
     }

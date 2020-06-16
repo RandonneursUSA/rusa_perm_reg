@@ -11,12 +11,18 @@ use Drupal\Core\Render\Element;
  * Implements hook_theme().
  */
 function rusa_perm_reg_theme() {
-  return [
-    'rusa_perm_registration' => [
-      'render element' => 'elements',
-    ],
-  ];
+	return [ 
+    		'rusa_perm_registration' => [
+      			'render element' => 'elements',
+    		],
+    		'rusa_perm_ride_reg' => [
+      			'render element' => 'elements',
+      			'template' => 'rusa-perm-ride-reg',
+    		],
+	    ];
+
 }
+
 
 /**
  * Prepares variables for rusa perm registration templates.
@@ -34,6 +40,13 @@ function template_preprocess_rusa_perm_registration(array &$variables) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
   $variables['attributes']['class'][] = 'perm-prog-reg';
+}
+
+function template_preprocess_rusa_perm_ride_reg(array &$variables) {
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+  $variables['attributes']['class'][] = 'perm-ride-reg';
 }
 
 /**

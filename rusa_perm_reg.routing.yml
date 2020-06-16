@@ -23,6 +23,17 @@ rusa_perm.reg:
     _permission: 'create rusa perm registration'
     user: \d+
 
+rusa_ride.reg:
+  path: '/user/{user}/permride'
+  defaults:
+    _title: 'Permanents Ride'
+    _controller: '\Drupal\rusa_perm_reg\Controller\RusaPermRideReg::permRideInfo'
+  requirements:
+    _permission: 'create rusa perm registration'
+    user: \d+
+
+
+
 rusa_perm.pay:
   path: '/cgi-bin/perm_pay.pl'
 
