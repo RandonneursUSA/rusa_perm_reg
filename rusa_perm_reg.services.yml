@@ -1,0 +1,5 @@
+services:
+  rusa_perm_reg.subscriber:
+    class: Drupal\rusa_perm_reg\EventSubscriber\RusaPermRegSubscriber
+    tags:
+      - {name: event_subscriber}
