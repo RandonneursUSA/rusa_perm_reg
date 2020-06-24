@@ -29,6 +29,7 @@ use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaRegData;
+use Drupal\rusa_perm_reg\RusaRideRegData;
 use Drupal\rusa_api\RusaPermanents;
 use Drupal\rusa_api\Client\RusaClient;
 
@@ -46,7 +47,7 @@ class RusaPermRegForm extends FormBase {
     protected $entityTypeManager;
     protected $uinfo;
     protected $regdata;
-    protected $release_form;
+    protected $rideregdata;
     protected $regstatus;
 
     /**
@@ -67,6 +68,7 @@ class RusaPermRegForm extends FormBase {
         $this->entityTypeManager = $entityTypeManager;
         $this->uinfo = $this->get_user_info();
         $this->regdata = new RusaRegData();
+        $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
         $this->settings = \Drupal::config('rusa_perm_reg.settings')->getRawData();
     }
 
@@ -141,7 +143,19 @@ class RusaPermRegForm extends FormBase {
                 '#type' 	=> 'item',
                 '#markup'   => $this->t($this->settings['good_to_go']),
             ];
-       
+
+            // Show existing perm ride registrations
+            if ($ridedata = $this->rideregdata->get_registrations() ) {
+                $form['rideregtop'] = ['#type' => 'item', '#markup' => $this->t('<h3>Your current perm registrations.</h3>')];
+                $form['ridereg'] = [
+                    '#theme'    => 'table',
+                    '#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description'],
+                    '#rows'     => array_values($ridedata),
+                    '#responsive' => TRUE,
+                    '#attributes' => ['class' => ['rusa-table']],
+                ];
+            }
+
             
             // Display  a link to the route search page
             $search_link = Link::createFromRoute(
@@ -162,7 +176,7 @@ class RusaPermRegForm extends FormBase {
 
             $form['instruct2'] = [
                 '#type'     => 'item',
-                '#markup'   => $this->t('Once you have the perm route # of the route you want to ride you can . ' .
+                '#markup'   => $this->t('Once you have the route # of the perm you want to ride,  you can  ' .
                 '<br />' . $waiver_link),
             ];
 
