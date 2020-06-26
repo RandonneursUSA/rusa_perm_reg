@@ -147,16 +147,49 @@ class RusaPermRegForm extends FormBase {
             // Show existing perm ride registrations
             if ($ridedata = $this->rideregdata->get_registrations() ) {
                 $form['rideregtop'] = ['#type' => 'item', '#markup' => $this->t('<h3>Your current perm registrations.</h3>')];
+           
+                $url = Url::fromRoute('rusa_perm.submit'); // Path to the submit results form
+
+                $rows = [];
+
+                // Add the operations buttons
+                foreach ($ridedata as $id => $reg) {
+                    $row = [];
+                    $url->setOption('query',  ['regid' => $id, 'mid' => $this->uinfo['mid'], 'pid' => $reg['pid'], 'ridedate' => $reg['ride_date']]);
+
+                    foreach($reg as $key => $val) {
+                        $row[] = $val;
+                    }
+                    
+                    $links['cancel'] = [
+                        'title' => $this->t('Cancel ride'),
+                        'url'   => Url::fromRoute('rusa.home'),
+                     ];
+
+                     $links['results'] = [
+                        'title' => $this->t('Submit results'),
+                        'url'  => $url,
+                    ];
+
+                    $row[] = [ 
+                        'data' => [
+                            '#type' => 'operations', 
+                            '#links' => $links,
+                        ],
+                    ];
+                    $rows[] = $row;
+                };
+           
                 $form['ridereg'] = [
-                    '#theme'    => 'table',
-                    '#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description'],
-                    '#rows'     => array_values($ridedata),
+                    '#type'    => 'table',
+                    '#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description', 'Operations'],
+                    '#rows'     => $rows,
                     '#responsive' => TRUE,
                     '#attributes' => ['class' => ['rusa-table']],
                 ];
             }
+        
 
-            
             // Display  a link to the route search page
             $search_link = Link::createFromRoute(
                     'Search for a permanent route to ride', 
