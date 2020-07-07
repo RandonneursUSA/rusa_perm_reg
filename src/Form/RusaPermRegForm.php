@@ -7,7 +7,14 @@
  * @Created 
  *  2020-06-05 - Paul Lieberman
  *
- * RUSA Perms Registration Form
+ * RUSA Permanents Registration
+ *
+ * Provides registration for the Perm Program
+ * as well as ride registration.
+ * 
+ * Integrates with SmartWaiver through the API
+ *
+ * Integrates with old backend through Perl Scripts
  *
  * ----------------------------------------------------------------------------------------
  * 
@@ -15,18 +22,14 @@
 
 namespace Drupal\rusa_perm_reg\Form;
 
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
-use Drupal\Core\Messenger;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
-use Drupal\file\Entity\File;
-use Drupal\media\Entity\Media;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaRegData;
 use Drupal\rusa_perm_reg\RusaRideRegData;
@@ -43,6 +46,7 @@ use Drupal\rusa_api\Client\RusaClient;
 class RusaPermRegForm extends FormBase {
 
     protected $settings;
+    protected $ride_settings;
     protected $currentUser;
     protected $entityTypeManager;
     protected $uinfo;
@@ -70,6 +74,7 @@ class RusaPermRegForm extends FormBase {
         $this->regdata = new RusaRegData();
         $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
         $this->settings = \Drupal::config('rusa_perm_reg.settings')->getRawData();
+        $this->ride_settings = \Drupal::config('rusa_perm_ride.settings')->getRawData();
     }
 
     /**
@@ -93,7 +98,7 @@ class RusaPermRegForm extends FormBase {
         $form[] = [
             '#title'  => $this->t('Program Registration'),
         ];
-
+        
         // Display member name and # so they know who they are
         $form['user'] = [
             '#type'		=> 'item',
@@ -101,7 +106,7 @@ class RusaPermRegForm extends FormBase {
         ];
 
         // Set all status to FALSE
-        $good_to_go = $reg_exists = $payment = $approved = FALSE;
+        $good_to_go = $reg_exists = $payment  = FALSE;
 
         // Determine the status of this registration
         if ($this->regdata->reg_exists()) {
@@ -111,14 +116,10 @@ class RusaPermRegForm extends FormBase {
             if ($this->regdata->payment_received()) {
                 $payment = TRUE;
             }
-
-            // Reg exists check approval
-            if ($this->regdata->registration_approved()) {
-                $approved = TRUE;
-            }
         }
         else {
             // New Registration
+            // Just display a submit button to create a new program registration
             $form['newreg'] = [
                 '#type'   => 'item',
                 '#markup' => $this->t('Before you can ride any permanents you must register for the program'),
@@ -137,8 +138,13 @@ class RusaPermRegForm extends FormBase {
                 ],
             ]; 
 		}
+		
+		/*
+		 * Ride registration starts here
+		 */
+        
         // If all good then ready to ride
-        if ( $reg_exists && $payment && $approved){
+        if ( $reg_exists && $payment ){
             $form['ride'] = [
                 '#type' 	=> 'item',
                 '#markup'   => $this->t($this->settings['good_to_go']),
@@ -147,77 +153,55 @@ class RusaPermRegForm extends FormBase {
             // Show existing perm ride registrations
             if ($ridedata = $this->rideregdata->get_registrations() ) {
                 $form['rideregtop'] = ['#type' => 'item', '#markup' => $this->t('<h3>Your current perm registrations.</h3>')];
-           
-                $url = Url::fromRoute('rusa_perm.submit'); // Path to the submit results form
-
-                $rows = [];
-
-                // Add the operations buttons
-                foreach ($ridedata as $id => $reg) {
-                    $row = [];
-                    $url->setOption('query',  ['regid' => $id, 'mid' => $this->uinfo['mid'], 'pid' => $reg['pid'], 'ridedate' => $reg['ride_date']]);
-
-                    foreach($reg as $key => $val) {
-                        $row[] = $val;
-                    }
-                    
-                    $links['cancel'] = [
-                        'title' => $this->t('Cancel ride'),
-                        'url'   => Url::fromRoute('rusa.home'),
-                     ];
-
-                     $links['results'] = [
-                        'title' => $this->t('Submit results'),
-                        'url'  => $url,
-                    ];
-
-                    $row[] = [ 
-                        'data' => [
-                            '#type' => 'operations', 
-                            '#links' => $links,
-                        ],
-                    ];
-                    $rows[] = $row;
-                };
-           
-                $form['ridereg'] = [
-                    '#type'    => 'table',
-                    '#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description', 'Operations'],
-                    '#rows'     => $rows,
-                    '#responsive' => TRUE,
-                    '#attributes' => ['class' => ['rusa-table']],
-                ];
+     			$form['ridereg'] = $this->get_current_registrations($ridedata);       
             }
         
-
             // Display  a link to the route search page
-            $search_link = Link::createFromRoute(
-                    'Search for a permanent route to ride', 
-                    'rusa_perm.search',
-                    ['attributes' => ['target' => '_blank']],  
-                )->toString();
+            $search_link = $this->get_search_link();
+
+
+            $form['ride_instruct'] = [
+                '#type'     => 'item',
+                '#markup'   => $this->t($this->ride_settings['instructions']),
+            ];
 
             $form['search'] = [
                 '#type'     => 'item',
-                '#markup'   => $this->t('To register for  a perm ride, first find the route you want to ride using our serch form.' . 
-                '<br />' . $search_link),
+                '#markup'   => $this->t($this->ride_settings['search'] . 
+                '<br />' . $search_link . '<br /> <br />' .
+                $this->ride_settings['route']),
             ];
 
+
+            $form['routeid'] = [
+                '#type'         => 'textfield',
+                '#title'        => $this->t('Route #'),                
+                '#size'         => 6,
+            ];
+
+            $form['actions'] = [
+                'submit' => [
+                    '#type'  => 'submit',
+                    '#value' => 'Register for perm ride',
+                ],
+            ];
+
+/*
             // Display a link to sign the waiver
             $waiver_link = $this->smartwaiver_link(); 
 
-
+            // Some instructions with the Smart Waiver link
             $form['instruct2'] = [
                 '#type'     => 'item',
                 '#markup'   => $this->t('Once you have the route # of the perm you want to ride,  you can  ' .
                 '<br />' . $waiver_link),
             ];
-
+*/
         }
         else {
             // Not ready to ride 
             // display some status messages
-                    
+                     
            if ($reg_exists && !$payment ) {
                 $form['payment'] = [
                    '#type'   => 'item',
@@ -225,18 +209,13 @@ class RusaPermRegForm extends FormBase {
                 ];
 
                 // Display a link to the payment page
-
-                $regid = $this->regdata->get_reg_id();
-                $url = Url::fromRoute('rusa_perm.pay');
-                $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
-                $pay_link = Link::fromTextAndUrl('Proceed to the payment page', $url)->toString();
+                $pay_link = $this->get_pay_link();
 
                 $form['paylink'] = [
                     '#type'     => 'item',
                     '#markup'   => $pay_link,
                 ];
 
-                $form_state->set('stage', 'regpay');
             }
             elseif ($reg_exists &&  $payment) {        
                 $form['payment'] = [
@@ -245,13 +224,6 @@ class RusaPermRegForm extends FormBase {
                 ];
             }
 
-            if ( $reg_exists && $payment && !$approved){ 
-                // Just waiting approval
-                $form['approval'] = [
-                    '#type'   => 'item',
-                    '#markup' => $this->t($this->settings['no_approval']),
-                ];
-            }
         }
         // End of status messages
 
@@ -259,8 +231,7 @@ class RusaPermRegForm extends FormBase {
         $this->regstatus = [
             'reg_exists'     => $reg_exists,
             'payment'        => $payment,
-            'approved'       => $approved];
-    
+        ];
 
         // Attach the Javascript and CSS, defined in rusa_api.libraries.yml.
         // $form['#attached']['library'][] = 'rusa_api/rusa_script';
@@ -277,20 +248,6 @@ class RusaPermRegForm extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         
-        $stage = $form_state->get('stage');
-
-        // Get info on the selected perm
-        /*
-        if ($stage == 'ridereg') {
-            // Get the id that was entered
-            $pid = $form_state->getValue('route_id');
-            $permobj = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
-            $perm = $permobj->getPermanent($pid);
-            $form_state->set('perm', $perm);
-
-            $form_state->setRebuild();
-        }
-        */
     } // End function validate
 
 
@@ -302,44 +259,37 @@ class RusaPermRegForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $action = $form_state->getTriggeringElement();
-        $stage = $form_state->get('stage');
-        
+
         if ($action['#value'] == "Cancel") {
             $form_state->setRedirect('user.page');
         }
         else {
 
-		 if ($this->regstatus['reg_exists']) {
-			// Registration exists so we are just going to relace the waiver
-			$reg = $this->regdata->get_reg_entity();
+            if ($this->regstatus['reg_exists']) {
+                // Registration exists so we are just going to relace the waiver
+                $reg = $this->regdata->get_reg_entity();
 
-		}
-		else {
-			// New registration
-			// Create the registration entity
-			$reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
-				[
-					'uid'		  => $this->uinfo['uid'],
-					'status'      => 1,
-					'field_rusa_' => $this->uinfo['mid'],
-				]);
-			$reg->save();
-            $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
-            $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
+            }
+            else {
+                // New registration
+                // Create the registration entity
+                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
+                        [
+                        'uid'		  => $this->uinfo['uid'],
+                        'status'      => 1,
+                        'field_rusa_' => $this->uinfo['mid'],
+                        ]);
+                $reg->save();
+                $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
+                $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
 
-            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
-		}
-            
-//            // Post to the Perl script for paypal payment
-//            $results = ['mid' => $this->uinfo['mid'], 'permregid' => $reg->id()];
-//
-//            // Initialize our client to put the results.
-//            $client = new RusaClient();
-//            $err = $client->perm_pay($results);
-//
+                $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+            }
+
         }
-
     }
+
+    /* Private Functions */ 
 
     /** 
      * Get user info
@@ -372,5 +322,79 @@ class RusaPermRegForm extends FormBase {
         return(Link::fromTextAndUrl('Sign the waiver', Url::fromUri($swurl))->toString());
 
     }
+
+
+	/**
+	 * Get a table of current registrations
+     *
+     */
+     protected function get_current_registrations($ridedata) {
+        $rows = [];
+		
+		// Step through each registration
+		foreach ($ridedata as $id => $reg) {
+			$row = [];
+	        $links = [];
+
+			// Add the data
+			foreach($reg as $key => $val) {
+				$row[] = $val;
+			}
+            
+            // If ridedate is future we show cancel
+            if ($reg['ride_date'] > date('Y-m-d')) {
+                $links['cancel'] = [
+                    'title' => $this->t('Cancel registration'),
+                    'url'   =>  Url::fromRoute('rusa_perm.cancel', ['regid' => $id]),
+                ];
+            }
+            else {
+			    $links['results'] = [
+				    'title' => $this->t('Submit results'),
+				    'url'  => Url::fromRoute('rusa_perm.submit', ['regid' => $id]),
+			    ];
+            }
+
+			// Add operations links
+			$row[] = [ 
+				'data' => [
+					'#type' => 'operations', 
+					'#links' => $links,
+			   ],
+			];
+
+			$rows[] = $row;
+		};
+   
+		return [
+			'#type'    => 'table',
+			'#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description', 'Operations'],
+			'#rows'     => $rows,
+			'#responsive' => TRUE,
+			'#attributes' => ['class' => ['rusa-table']],
+		];
+	}
+
+    /**
+     * Build a link to the perm search page
+     *
+     */
+    protected function get_search_link(){
+        $url = Url::fromRoute('rusa_perm.search');
+        $url->setOption('attributes',  ['target' => '_blank']);
+        return Link::fromTextAndUrl('Search for a permanent route to ride', $url)->toString();
+    }
+
+    /**
+     * Build a link to the payment page
+     *
+     */
+    protected function get_pay_link() {
+        $regid = $this->regdata->get_reg_id();
+        $url = Url::fromRoute('rusa_perm.pay');
+        $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
+        return Link::fromTextAndUrl('Proceed to the payment page', $url)->toString();
+    }
+
 
 } // End of class  

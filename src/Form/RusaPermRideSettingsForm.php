@@ -28,25 +28,48 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
   }
 
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+    /**
+    * {@inheritdoc}
+    */
+    public function buildForm(array $form, FormStateInterface $form_state) {
 
-		$config = $this->config('rusa_perm_ride.settings');
+        $config = $this->config('rusa_perm_ride.settings');
 
-    $form['settings'] = [
-      '#markup' => $this->t('Customize the messages displayed on the Perm Program Registration form.'),
-    ];
+        $form['settings'] = [
+            '#markup' => $this->t('Customize the messages displayed on the Perm Ride Registration form.'),
+        ];
 
-    $form['instructions'] = [
-      '#type'      => 'textarea',
-      '#title'     => 'Perm ride Registration form instructions',
-      '#rows'      => 6,
-      '#cols'      => 40,
-      '#resizable' => 'both',
-			'#default_value' => $config->get('instructions'), 
-    ];
+        $form['instructions'] = [
+            '#type'          => 'textarea',
+            '#title'         => $this->t('Perm ride registration form instructions'),
+            '#rows'          => 6,
+            '#cols'          => 40,
+            '#resizable'     => 'both',
+            '#default_value' => $config->get('instructions'), 
+        ];
+
+        $form['search'] = [
+            '#type'           => 'textarea',
+            '#title'          => $this->t('Search link text'),
+            '#description'    => $this->t('Enter the text to accompany the link to the perm search form.'),
+            '#rows'           => 4,
+            '#cols'           => 40,
+            '#resizable'      => 'both',
+            '#default_value'  => $config->get('search'), 
+        ];
+
+
+        $form['route'] = [
+            '#type'           => 'textarea',
+            '#title'          => 'Route field text',
+            '#description'    => $this->t('Enter the text to accompany route # field'),
+            '#rows'           => 4,
+            '#cols'           => 40,
+            '#resizable'      => 'both',
+            '#default_value'  => $config->get('route'), 
+        ];
+
+
 
     $form['actions'] = [
       '#type' => 'actions',
@@ -69,6 +92,8 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
 
      $this->config('rusa_perm_ride.settings')
            ->set('instructions', $values['instructions'])
+           ->set('search',       $values['search'])
+           ->set('route',        $values['route'])
            ->save();
 
     parent::submitForm($form, $form_state);
