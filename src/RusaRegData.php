@@ -61,15 +61,9 @@ class RusaRegData {
 
         $query_result = $query->execute();
 
-		// There could be more than one
-		// so check for approval
         foreach ($query_result as $id) {
             $this->reg = $storage->load($id);
             $this->regid = $id;
-        	$approved_by =  $this->reg->get('field_approved_by');
-			if (!empty($approved_by)) {
-				break;
-			}
         }
     }
 
@@ -188,25 +182,5 @@ class RusaRegData {
         return $payment_flag[0]['value'] == 1 ? TRUE : FALSE;
       }
   }
-
-  /**
-   * registration approved
-   *
-   * return FALSE or approver's name
-   */
-  public function registration_approved() {
-      if ($this->reg) {
-        // Check to see if registration has been approved
-        // And if so by who
-        $approved_by =  $this->reg->get('field_approved_by');
-        if ($approved_by->isEmpty()) {
-              return FALSE;
-        }
-        else {
-           return $approved_by->referencedEntities()[0]->get('field_display_name')->getValue()[0]['value'];
-        }
-      }
-  }
-
 
 } // End of class  
