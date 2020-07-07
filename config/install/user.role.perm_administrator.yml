@@ -9,11 +9,6 @@ is_admin: null
 permissions:
   - 'access rusa perm registration overview'
   - 'administer rusa perm registration'
-  - 'create release_form media'
   - 'create rusa perm registration'
-  - 'delete any release_form media'
-  - 'delete own release_form media'
-  - 'edit any release_form media'
-  - 'edit own release_form media'
   - 'edit rusa perm registration'
   - 'view rusa perm registration'

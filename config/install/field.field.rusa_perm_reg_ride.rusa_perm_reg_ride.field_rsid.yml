@@ -1,0 +1,20 @@
+uuid: 540492c2-e262-4447-a860-587c85594303
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_reg_ride.field_rsid
+  module:
+    - rusa_perm_reg
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.field_rsid
+field_name: field_rsid
+entity_type: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+label: 'Result Status ID'
+description: 'The rsid from the rstatus table in GDBM.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

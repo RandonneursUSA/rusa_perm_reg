@@ -1,0 +1,24 @@
+uuid: a71ccc3e-3458-4ba9-a378-f2993459bf94
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_reg_ride.field_rusa_member_id
+  module:
+    - rusa_perm_reg
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.field_rusa_member_id
+field_name: field_rusa_member_id
+entity_type: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+label: 'RUSA #'
+description: 'Rider''s RUSA #'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

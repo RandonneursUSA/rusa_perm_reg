@@ -5,6 +5,9 @@ dependencies:
   config:
     - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_date_of_ride
     - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_perm_number
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_rsid
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_rusa_member_id
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_waiver_id
   module:
     - datetime
     - rusa_perm_reg
@@ -15,9 +18,9 @@ bundle: rusa_perm_reg_ride
 mode: default
 content:
   created:
-    label: above
+    label: inline
     type: timestamp
-    weight: 20
+    weight: 2
     region: content
     settings:
       date_format: medium
@@ -25,8 +28,8 @@ content:
       timezone: ''
     third_party_settings: {  }
   field_date_of_ride:
-    weight: 22
-    label: above
+    weight: 5
+    label: inline
     settings:
       format_type: medium
       timezone_override: ''
@@ -34,18 +37,43 @@ content:
     type: datetime_default
     region: content
   field_perm_number:
-    weight: 21
-    label: above
+    weight: 4
+    label: inline
     settings:
       thousand_separator: ''
       prefix_suffix: true
     third_party_settings: {  }
     type: number_integer
     region: content
+  field_rsid:
+    weight: 7
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    type: string
+    region: content
+  field_rusa_member_id:
+    weight: 1
+    label: inline
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    type: number_integer
+    region: content
+  field_waiver_id:
+    weight: 3
+    label: inline
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    type: string
+    region: content
   status:
     type: boolean
-    label: above
-    weight: 0
+    label: inline
+    weight: 6
     settings:
       format: enabled-disabled
       format_custom_false: ''
@@ -53,9 +81,9 @@ content:
     region: content
     third_party_settings: {  }
   uid:
-    label: above
+    label: inline
     type: author
-    weight: 15
+    weight: 0
     region: content
     settings: {  }
     third_party_settings: {  }

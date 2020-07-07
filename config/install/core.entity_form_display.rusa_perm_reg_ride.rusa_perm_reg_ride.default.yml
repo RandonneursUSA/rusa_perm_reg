@@ -5,6 +5,9 @@ dependencies:
   config:
     - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_date_of_ride
     - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_perm_number
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_rsid
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_rusa_member_id
+    - field.field.rusa_perm_reg_ride.rusa_perm_reg_ride.field_waiver_id
   module:
     - datetime
     - rusa_perm_reg
@@ -26,7 +29,36 @@ content:
     third_party_settings: {  }
     type: number
     region: content
+  field_rsid:
+    weight: 4
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+    type: string_textfield
+    region: content
+  field_rusa_member_id:
+    weight: 3
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+    type: number
+    region: content
+  field_waiver_id:
+    weight: 2
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+    type: string_textfield
+    region: content
+  status:
+    type: boolean_checkbox
+    weight: 5
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
 hidden:
   created: true
-  status: true
   uid: true

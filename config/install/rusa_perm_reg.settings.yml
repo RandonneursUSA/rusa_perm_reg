@@ -1,1 +1,6 @@
-instructions: "Enter the instructions that you want to appear at the top of the Perm Program Registration form here.""
+instructions: 'Instructions for completing your registration for the permanents program.'
+no_approval: 'Your perm program registration is awaiting approval by the Permanents Program administrators.'
+no_payment: 'You must now submit your annual payment for the Perms Program'
+expired: 'Your perm program registration is expired.  You''ll need to pay the fee for the calendar year.'
+good_to_go: 'You are registered to ride permanents for the current calendar year.'
+yes_payment: 'Your payment has been received.'

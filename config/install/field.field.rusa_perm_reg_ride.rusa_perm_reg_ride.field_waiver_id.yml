@@ -1,0 +1,20 @@
+uuid: 9239e0a6-17db-42e6-9e07-d455be6e2d39
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.rusa_perm_reg_ride.field_waiver_id
+  module:
+    - rusa_perm_reg
+id: rusa_perm_reg_ride.rusa_perm_reg_ride.field_waiver_id
+field_name: field_waiver_id
+entity_type: rusa_perm_reg_ride
+bundle: rusa_perm_reg_ride
+label: 'Waiver ID'
+description: 'This is the SmartWaiver waiver ID.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
