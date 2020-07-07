@@ -53,6 +53,7 @@ class RusaPermRegForm extends FormBase {
     protected $regdata;
     protected $rideregdata;
     protected $regstatus;
+    protected $step;
 
     /**
      * @getFormID
@@ -115,16 +116,36 @@ class RusaPermRegForm extends FormBase {
             // Reg exists check payment
             if ($this->regdata->payment_received()) {
                 $payment = TRUE;
+                $form['payment'] = [
+                   '#type'   => 'item',
+                   '#markup' => $this->t($this->settings['yes_payment']),
+                ];
             }
+            else {
+                $form['payment'] = [
+                   '#type'   => 'item',
+                   '#markup' => $this->t($this->settings['no_payment']),
+                ];
+
+                // Display a link to the payment page
+                $pay_link = $this->get_pay_link();
+
+                $form['paylink'] = [
+                    '#type'     => 'item',
+                    '#markup'   => $pay_link,
+                ];
+            }            
         }
         else {
-            // New Registration
+            // New Program Registration
             // Just display a submit button to create a new program registration
             $form['newreg'] = [
                 '#type'   => 'item',
                 '#markup' => $this->t('Before you can ride any permanents you must register for the program'),
             ];
 
+            $this->step = 'progreg';
+             
             $form['actions'] = [
                 '#type'   => 'actions',
                 'cancel'  => [
@@ -173,12 +194,14 @@ class RusaPermRegForm extends FormBase {
             ];
 
 
-            $form['routeid'] = [
+            $form['pid'] = [
                 '#type'         => 'textfield',
                 '#title'        => $this->t('Route #'),                
                 '#size'         => 6,
             ];
 
+            $this->step = 'ridereg';
+ 
             $form['actions'] = [
                 'submit' => [
                     '#type'  => 'submit',
@@ -198,35 +221,7 @@ class RusaPermRegForm extends FormBase {
             ];
 */
         }
-        else {
-            // Not ready to ride 
-            // display some status messages
-                     
-           if ($reg_exists && !$payment ) {
-                $form['payment'] = [
-                   '#type'   => 'item',
-                   '#markup' => $this->t($this->settings['no_payment']),
-                ];
-
-                // Display a link to the payment page
-                $pay_link = $this->get_pay_link();
-
-                $form['paylink'] = [
-                    '#type'     => 'item',
-                    '#markup'   => $pay_link,
-                ];
-
-            }
-            elseif ($reg_exists &&  $payment) {        
-                $form['payment'] = [
-                   '#type'   => 'item',
-                   '#markup' => $this->t($this->settings['yes_payment']),
-                ];
-            }
-
-        }
-        // End of status messages
-
+        
         // Save reg status
         $this->regstatus = [
             'reg_exists'     => $reg_exists,
@@ -247,7 +242,25 @@ class RusaPermRegForm extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+    
+        if ($this->step == 'ridereg') {
         
+            // Check route validity
+            $pid = $form_state->getValue('pid');
+            $route_valid = $this->is_route_valid($pid);
+       
+            if ($route_valid == 'sr') {
+                $form_state->setErrorByName('pid', $this->t('Perm %pid is an SR-600 which are not part of the Perm Program', ['%pid' => $pid]));
+            }
+            elseif ($route_valid == 'inactive') {
+                $form_state->setErrorByName('pid', $this->t('Perm %pid is inactive', ['%pid' => $pid]));
+            }
+            elseif ($route_valid == 'valid') {
+                // We want to show the perm for user validation
+                $form_state->setRebuild();        
+            }
+
+        }
     } // End function validate
 
 
@@ -395,6 +408,23 @@ class RusaPermRegForm extends FormBase {
         $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
         return Link::fromTextAndUrl('Proceed to the payment page', $url)->toString();
     }
-
+    
+    /**
+     * Check if route is valid
+     *
+     */
+    protected function is_route_valid($pid) {
+        $perms = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
+        
+        if ($perms->isInactive($pid)) {
+            return 'inactive';
+        }
+        if ($perms->isSr($pid) == '1') {
+            return 'sr';
+        }
+        return 'valid';
+      
+    }
+ 
 
 } // End of class  
