@@ -66,7 +66,7 @@ class RusaRideRegData {
      * Get perm data from rusa database
      *
      */
-    private function getPerm($pid) {
+    public function getPerm($pid) {
         $permobj = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
         $perm = $permobj->getPermanent($pid);
         return($perm);

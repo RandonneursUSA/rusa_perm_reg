@@ -1,6 +1,14 @@
-smartwaiver:
+rusa_perm_style:
   version: 1.x
-  js:
-     https://www.smartwaiver.com/m/webpl/f.js?webpl_waiver=5eea4cfb2b05a&webpl_title=Sign%20the%20waiver&webpl_align=Right&webpl_fontsize=20&webpl_background=%23C01700&webpl_fontcolor=%23FFFFFF&webpl_font=Arial: {}
-  dependencies:
-    - core/drupalSettings
+  css:
+    theme:
+      css/rusa_perm.css: {}
+
+# I think this is for the embedded SW button
+#
+#smartwaiver:
+#  version: 1.x
+#  js:
+#     https://www.smartwaiver.com/m/webpl/f.js?webpl_waiver=5eea4cfb2b05a&webpl_title=Sign%20the%20waiver&webpl_align=Right&webpl_fontsize=20&webpl_background=%23C01700&webpl_fontcolor=%23FFFFFF&webpl_font=Arial: {}
+#  dependencies:
+#    - core/drupalSettings

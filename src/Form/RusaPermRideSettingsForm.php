@@ -69,6 +69,17 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
             '#default_value'  => $config->get('route'), 
         ];
 
+        $form['sr'] = [
+            '#type'           => 'textarea',
+            '#title'          => 'SR error message ',
+            '#description'    => $this->t('Enter the error text they see if the enter thr route # of and SR'),
+            '#rows'           => 4,
+            '#cols'           => 40,
+            '#resizable'      => 'both',
+            '#default_value'  => $config->get('sr'),                         
+        ];
+
+
 
 
     $form['actions'] = [
@@ -94,6 +105,7 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
            ->set('instructions', $values['instructions'])
            ->set('search',       $values['search'])
            ->set('route',        $values['route'])
+           ->set('sr',           $values['sr'])
            ->save();
 
     parent::submitForm($form, $form_state);

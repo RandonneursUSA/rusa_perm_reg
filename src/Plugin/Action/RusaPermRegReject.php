@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Action for Views Bulk Operations
+ * Reject a waiver
+ *
+ * We are not implementing this, but I'll leave the code for now
+ *
+ */
+
 namespace Drupal\rusa_perm_reg\Plugin\Action;
 
 use Drupal\views_bulk_operations\Action\ViewsBulkOperationsActionBase;

@@ -35,7 +35,7 @@ class RusaPermRegSubscriber implements EventSubscriberInterface {
     }
 
     protected function new_waiver($waiver) {
-        dpm($waiver);
+        // This is for when we implement Webhooks
     }   
 
 }

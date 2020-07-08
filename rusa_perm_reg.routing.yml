@@ -23,19 +23,37 @@ rusa_perm.reg:
     _permission: 'create rusa perm registration'
     user: \d+
 
-rusa_perm.result:
-  path: '/rusa/perm/result'
+rusa_perm.payment:
+  path: '/rusa/perm/payment'
   defaults:
-    _title: 'Permanents Ride Results'
-    _controller: '\Drupal\rusa_perm_reg\Controller\RusaPermRideReg::resultSubmit'
+    _title: 'Permanents Program Payment'
+    _controller: '\Drupal\rusa_perm_reg\Controller\RusaPermController::payReceived'
   requirements:
     _permission: 'create rusa perm registration'
-   
-rusa_perm.submit:
-  path: '/cgi-bin/resultsubmit_tmp.pl'
 
+rusa_perm.submit:
+  path: '/rusa/perm/resultsubmit/{regid}'
+  defaults:
+    _title: 'Submit Permanent Results'
+    _form: '\Drupal\rusa_perm_reg\Form\ResultSubmit'
+  requirements:
+    _permission: 'create rusa perm registration'
+    regid: \d+
+
+rusa_perm.cancel:
+  path: '/rusa/perm/cancel/{regid}'
+  defaults:
+    _title: 'Submit Permanent Results'
+    _controller: '\Drupal\rusa_perm_reg\Controller\RusaPermController::permCancel'
+  requirements:
+    _permission: 'create rusa perm registration'
+    regid: \d+
+    
 rusa_perm.pay:
   path: '/cgi-bin/perm_pay.pl'
 
 rusa_perm.search:
   path: '/cgi-bin/permsearch_GF.pl'
+ 
+rusa_perm.sr:
+  path: '/pages/super-randonnees'  

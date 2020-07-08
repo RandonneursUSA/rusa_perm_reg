@@ -78,30 +78,6 @@ class RusaRegData {
 
 
   /**
-   * Get current release form
-   *
-   * return uri of file
-   */
-  public function get_release_form() {
-      $media = \Drupal::entityTypeManager()->getStorage('media');
-      $query_result = $media->getQuery()
-          ->condition('bundle', 'release_form')
-          ->execute();
-      if ($query_result) {
-          // Justing getting the first one now
-          // Need logic to select which one 
-          $id = array_shift($query_result);
-          $release = $media->load($id);
-          $field   = $release->get('field_media_file');
-          $fid     = $field[0]->getValue()['target_id'];
-          $version = $release->get('field_version')[0]->getValue()['value'];;
-          $file    = File::load($fid);
-          $uri     = $file->get('uri')[0]->getValue()['value'];
-          return(['id' => $id, 'uri' => $uri, 'version' => $version]);
-      }
-  }
-
-  /**
    * Get reg id
    *
    * Return regid
@@ -132,44 +108,7 @@ class RusaRegData {
       }
   }  
 
-  /**
-   * Waiver exists
-   *
-   * Return boolean
-   */
-  public function waiver_exists() {
-      if ($this->reg) {
-        // Check to see if the waiver has been uploaded
-        $this->waiver = $this->reg->get('field_signed_waiver');
-        return $this->waiver->isEmpty() ? FALSE : TRUE;
-      }
-  }
-
-  /**
-   * waiver expired
-   *
-   * Return boolean
-   */
-  public function waiver_expired() { 
-      //Check to see if the waiver is expired
-      $waiver_file  = $this->waiver->referencedEntities();
-      $expired_flag = $waiver_file[0]->get('field_expired')->getValue();
-      return  $expired_flag[0]['value'] == 1 ? TRUE : FALSE;
-  }
-
-  /**
-   * waiver invalid
-   *
-   * Return boolean
-   */
-  public function waiver_invalid() { 
-      //Check to see if the waiver is invalid
-      $waiver_file  = $this->waiver->referencedEntities();
-      $invalid_flag = $waiver_file[0]->get('field_invalid')->getValue();
-      return  $invalid_flag[0]['value'] == 1 ? TRUE : FALSE;
-  }
-
-
+ 
   /**
    * payment received
    *

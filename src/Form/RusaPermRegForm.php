@@ -22,7 +22,7 @@
 
 namespace Drupal\rusa_perm_reg\Form;
 
-use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
@@ -30,6 +30,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaRegData;
 use Drupal\rusa_perm_reg\RusaRideRegData;
@@ -43,7 +44,7 @@ use Drupal\rusa_api\Client\RusaClient;
  * All of the form handling is within this class.
  *
  */
-class RusaPermRegForm extends FormBase {
+class RusaPermRegForm extends ConfirmFormBase {
 
     protected $settings;
     protected $ride_settings;
@@ -53,7 +54,8 @@ class RusaPermRegForm extends FormBase {
     protected $regdata;
     protected $rideregdata;
     protected $regstatus;
-    protected $step;
+    protected $step = 'start';
+    protected $pid;
 
     /**
      * @getFormID
@@ -88,12 +90,45 @@ class RusaPermRegForm extends FormBase {
         );
     }
 
+   /**
+    * {@inheritdoc}
+    */
+    public function getCancelUrl() {        
+        return new Url('rusa_perm.reg', ['user' => $this->uinfo['uid']]);
+    }
+
+    /**
+    * {@inheritdoc}
+    */
+    public function getQuestion() {
+       
+        return $this->t("Is this the perm you want to ride?");
+    }
+    
+    /**
+    * {@inheritdoc}
+    */
+    public function getDescription() {
+        return $this->t("Please confirm your choice.");
+    }
+    
+
     /**
      * @buildForm
      *
      *
      */
     public function buildForm(array $form, FormStateInterface $form_state) {  
+    
+        // Confirmation step
+        if ($this->step === 'confirm') {
+            // Display the selected perm
+            $form['perm'] = $this->get_perm($form_state->getValue('pid'));
+            
+            // Attach css to hide the local action tabs
+            $form['#attached']['library'][] = 'rusa_perm_reg/rusa_perm_style';
+            return parent::buildForm($form, $form_state);
+        }
 
         // Start the form
         $form[] = [
@@ -188,9 +223,7 @@ class RusaPermRegForm extends FormBase {
 
             $form['search'] = [
                 '#type'     => 'item',
-                '#markup'   => $this->t($this->ride_settings['search'] . 
-                '<br />' . $search_link . '<br /> <br />' .
-                $this->ride_settings['route']),
+                '#markup'   => $this->t($search_link . '<br /><br />' . $this->ride_settings['route']),
             ];
 
 
@@ -243,23 +276,33 @@ class RusaPermRegForm extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
     
-        if ($this->step == 'ridereg') {
+        if ($this->step === 'confirm') {
+            return;
+        }
+        elseif ($this->step === 'ridereg') {
         
             // Check route validity
             $pid = $form_state->getValue('pid');
             $route_valid = $this->is_route_valid($pid);
        
-            if ($route_valid == 'sr') {
-                $form_state->setErrorByName('pid', $this->t('Perm %pid is an SR-600 which are not part of the Perm Program', ['%pid' => $pid]));
+            if ($route_valid == 'sr') {            
+                // Compute the error message for SR-600                
+                $link = $this->get_sr_link();             
+                $msg = $this->ride_settings['sr'];   
+                $msg = str_replace('[perm:id]', $pid, $msg);
+                $msg = str_replace('[perm:link]', $link, $msg);
+                                
+                $form_state->setErrorByName('pid', $this->t($msg));
             }
             elseif ($route_valid == 'inactive') {
-                $form_state->setErrorByName('pid', $this->t('Perm %pid is inactive', ['%pid' => $pid]));
+                $form_state->setErrorByName('pid', $this->t('Permanent route %pid is not active.', ['%pid' => $pid]));
             }
+            elseif ($route_valid == 'invalid') {
+                $form_state->setErrorByName('pid', $this->t('%pid is not a valid permanent route number.', ['%pid' => $pid]));
+            }       
             elseif ($route_valid == 'valid') {
-                // We want to show the perm for user validation
-                $form_state->setRebuild();        
+                $this->pid = $pid;
             }
-
         }
     } // End function validate
 
@@ -271,34 +314,51 @@ class RusaPermRegForm extends FormBase {
      *
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $action = $form_state->getTriggeringElement();
-
-        if ($action['#value'] == "Cancel") {
-            $form_state->setRedirect('user.page');
+    
+        // Don't submit the form until after confirmation
+        if ($this->step === 'ridereg') {
+            $form_state->setRebuild();
+            $this->step = 'confirm';
+            return;
         }
-        else {
+        elseif ($this->step === 'progreg') {
+    
+            $action = $form_state->getTriggeringElement();
 
-            if ($this->regstatus['reg_exists']) {
-                // Registration exists so we are just going to relace the waiver
-                $reg = $this->regdata->get_reg_entity();
-
+            if ($action['#value'] == "Cancel") {
+                $form_state->setRedirect('user.page');
             }
             else {
-                // New registration
-                // Create the registration entity
-                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
-                        [
-                        'uid'		  => $this->uinfo['uid'],
-                        'status'      => 1,
-                        'field_rusa_' => $this->uinfo['mid'],
-                        ]);
-                $reg->save();
-                $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
-                $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
 
-                $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+                if ($this->regstatus['reg_exists']) {
+                    // Registration exists so we are just going to relace the waiver
+                    $reg = $this->regdata->get_reg_entity();
+
+                }
+                else {
+                    // New registration
+                    // Create the registration entity
+                    $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
+                            [
+                            'uid'		  => $this->uinfo['uid'],
+                            'status'      => 1,
+                            'field_rusa_' => $this->uinfo['mid'],
+                            ]);
+                    $reg->save();
+                    $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
+                    $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
+
+                    $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+                }
+
             }
-
+        }
+        elseif ($this->step === 'confirm') {           
+            // Ride registration has been confirmed so save it and redirect to SmartWaiver
+            $url = $this->smartwaiver_url($this->pid);
+            $response = new TrustedRedirectResponse($url);
+            $form_state->setResponse($response);        
+            
         }
     }
 
@@ -321,20 +381,22 @@ class RusaPermRegForm extends FormBase {
         return($uinfo);
     }
 
+   
     /**
-     * Generate Smartwaiver link
+     * Generate Smartwaiver URl
      *
      */
-    protected function smartwaiver_link() { 
+    protected function smartwaiver_url($pid) { 
         $swurl = 'https://waiver.smartwaiver.com/w/5eea4cfb2b05a/web/';
         $swurl .= '?wautofill_firstname='   . $this->uinfo['fname'];
         $swurl .= '&wautofill_lastname='    . $this->uinfo['lname'];
         $swurl .= '&wautofill_dobyyyymmdd=' . $this->uinfo['dob'];
-        $swurl .= '&wautofill_tag='         . $this->uinfo['mid'];
-        
-        return(Link::fromTextAndUrl('Sign the waiver', Url::fromUri($swurl))->toString());
+        $swurl .= '&wautofill_tag='         . $this->uinfo['mid'] . ':' . $pid;
 
+        return $swurl;
+        
     }
+
 
 
 	/**
@@ -387,6 +449,33 @@ class RusaPermRegForm extends FormBase {
 			'#attributes' => ['class' => ['rusa-table']],
 		];
 	}
+	
+	
+	/**
+	 * Get a table of current registrations
+     *
+     */
+     protected function get_perm($pid) {
+        
+		$perm = $this->rideregdata->getPerm($pid);
+		$row = [
+            'pid'       => $pid,
+            'pname'     => $perm->name,
+            'pdist'     => $perm->dist, 
+            'pclimb'    => $perm->climbing, 
+            'pdesc'     => $perm->description,
+        ];
+		
+		return [
+			'#type'    => 'table',
+			'#header'   => ['Route #', 'Name', 'Km', 'Climb (ft.)', 'Description' ],
+			'#rows'     => [$row],
+			'#responsive' => TRUE,
+			'#attributes' => ['class' => ['rusa-table']],
+		];
+	}
+	
+	
 
     /**
      * Build a link to the perm search page
@@ -395,7 +484,7 @@ class RusaPermRegForm extends FormBase {
     protected function get_search_link(){
         $url = Url::fromRoute('rusa_perm.search');
         $url->setOption('attributes',  ['target' => '_blank']);
-        return Link::fromTextAndUrl('Search for a permanent route to ride', $url)->toString();
+        return Link::fromTextAndUrl('Search for a route #', $url)->toString();
     }
 
     /**
@@ -415,7 +504,9 @@ class RusaPermRegForm extends FormBase {
      */
     protected function is_route_valid($pid) {
         $perms = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
-        
+        if (! $perms->getPermanents()){
+            return 'invalid';
+        }
         if ($perms->isInactive($pid)) {
             return 'inactive';
         }
@@ -425,6 +516,18 @@ class RusaPermRegForm extends FormBase {
         return 'valid';
       
     }
+ 
+    /**
+     *
+     * Build a link to the SR-600 page
+     *
+     */
+    protected function get_sr_link() {
+        $url = Url::fromRoute('rusa_perm.sr');
+        return Link::fromTextAndUrl('SR-600 page', $url)->toString();
+    }
+ 
+ 
  
 
 } // End of class  
