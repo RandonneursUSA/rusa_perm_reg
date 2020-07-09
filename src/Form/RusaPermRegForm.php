@@ -122,12 +122,15 @@ class RusaPermRegForm extends ConfirmFormBase {
     
         // Confirmation step
         if ($this->step === 'confirm') {
+            $form = parent::buildForm($form, $form_state);
+            
             // Display the selected perm
             $form['perm'] = $this->get_perm($form_state->getValue('pid'));
-            
+                        
             // Attach css to hide the local action tabs
             $form['#attached']['library'][] = 'rusa_perm_reg/rusa_perm_style';
-            return parent::buildForm($form, $form_state);
+            $form['actions']['submit']['#value'] = $this->t('Sign the waiver');
+            return $form;
         }
 
         // Start the form
