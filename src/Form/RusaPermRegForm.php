@@ -76,8 +76,8 @@ class RusaPermRegForm extends ConfirmFormBase {
         $this->uinfo = $this->get_user_info();
         $this->regdata = new RusaRegData();
         $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
-        $this->settings = \Drupal::config('rusa_perm_reg.settings')->getRawData();
-        $this->ride_settings = \Drupal::config('rusa_perm_ride.settings')->getRawData();
+        $this->settings['prog'] = \Drupal::config('rusa_perm_reg.settings')->getRawData();
+        $this->settings['ride'] = \Drupal::config('rusa_perm_ride.settings')->getRawData();
     }
 
     /**
@@ -127,6 +127,11 @@ class RusaPermRegForm extends ConfirmFormBase {
             // Display the selected perm
             $form['perm'] = $this->get_perm($form_state->getValue('pid'));
                         
+            $form['remember'] = [
+                '#type'   => 'item',
+                '#markup' => $this->t('Remember the Route #, you’ll need to re-enter it on the waiver.'),
+            ];
+            
             // Attach css to hide the local action tabs
             $form['#attached']['library'][] = 'rusa_perm_reg/rusa_perm_style';
             $form['actions']['submit']['#value'] = $this->t('Sign the waiver');
@@ -156,13 +161,13 @@ class RusaPermRegForm extends ConfirmFormBase {
                 $payment = TRUE;
                 $form['payment'] = [
                    '#type'   => 'item',
-                   '#markup' => $this->t($this->settings['yes_payment']),
+                   '#markup' => $this->t($this->settings['prog']['yes_payment']),
                 ];
             }
             else {
                 $form['payment'] = [
                    '#type'   => 'item',
-                   '#markup' => $this->t($this->settings['no_payment']),
+                   '#markup' => $this->t($this->settings['prog']['no_payment']),
                 ];
 
                 // Display a link to the payment page
@@ -206,7 +211,7 @@ class RusaPermRegForm extends ConfirmFormBase {
         if ( $reg_exists && $payment ){
             $form['ride'] = [
                 '#type' 	=> 'item',
-                '#markup'   => $this->t($this->settings['good_to_go']),
+                '#markup'   => $this->t($this->settings['prog']['good_to_go']),
             ];
 
             // Show existing perm ride registrations
@@ -221,12 +226,12 @@ class RusaPermRegForm extends ConfirmFormBase {
 
             $form['ride_instruct'] = [
                 '#type'     => 'item',
-                '#markup'   => $this->t($this->ride_settings['instructions']),
+                '#markup'   => $this->t($this->settings['ride']['instructions']),
             ];
 
             $form['search'] = [
                 '#type'     => 'item',
-                '#markup'   => $this->t($search_link . '<br /><br />' . $this->ride_settings['route']),
+                '#markup'   => $this->t($search_link . '<br /><br />' . $this->settings['ride']['route']),
             ];
 
 
@@ -291,7 +296,7 @@ class RusaPermRegForm extends ConfirmFormBase {
             if ($route_valid == 'sr') {            
                 // Compute the error message for SR-600                
                 $link = $this->get_sr_link();             
-                $msg = $this->ride_settings['sr'];   
+                $msg = $this->settings['ride']['sr'];   
                 $msg = str_replace('[perm:id]', $pid, $msg);
                 $msg = str_replace('[perm:link]', $link, $msg);
                                 
@@ -390,7 +395,9 @@ class RusaPermRegForm extends ConfirmFormBase {
      *
      */
     protected function smartwaiver_url($pid) { 
-        $swurl = 'https://waiver.smartwaiver.com/w/5eea4cfb2b05a/web/';
+        // Get URL from settings
+        $swurl = $this->settings['ride']['swurl'];
+        // $swurl = 'https://waiver.smartwaiver.com/w/5eea4cfb2b05a/web/';
         $swurl .= '?wautofill_firstname='   . $this->uinfo['fname'];
         $swurl .= '&wautofill_lastname='    . $this->uinfo['lname'];
         $swurl .= '&wautofill_dobyyyymmdd=' . $this->uinfo['dob'];

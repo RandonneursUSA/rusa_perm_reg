@@ -35,11 +35,34 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
 
         $config = $this->config('rusa_perm_ride.settings');
 
-        $form['settings'] = [
-            '#markup' => $this->t('Customize the messages displayed on the Perm Ride Registration form.'),
+        // Build the form
+
+        $form['rusa'] = [
+            '#type'        => 'vertical_tabs',
+            '#default_tab' => 'settings',
         ];
 
-        $form['instructions'] = [
+        $form['settings'] = [
+            '#type'   => 'details',
+            '#title'  => $this->t('Settings'),
+            '#group'  => 'rusa',
+        ];
+        
+        $form['settings']['swurl'] = [
+            '#type'     => 'textfield',
+            '#title'    => $this->t('SmartWaiver URL'),
+            '#size'     => 40,
+            '#default_value' => $config->get('swurl'),
+        ];
+        
+        $form['messages'] = [
+            '#type'   => 'details',
+            '#title'  => $this->t('Messages'),
+            '#group'  => 'rusa',
+        ];
+        
+
+        $form['messages']['instructions'] = [
             '#type'          => 'textarea',
             '#title'         => $this->t('Perm ride registration form instructions'),
             '#rows'          => 6,
@@ -48,7 +71,7 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
             '#default_value' => $config->get('instructions'), 
         ];
 
-        $form['search'] = [
+        $form['messages']['search'] = [
             '#type'           => 'textarea',
             '#title'          => $this->t('Search link text'),
             '#description'    => $this->t('Enter the text to accompany the link to the perm search form.'),
@@ -59,7 +82,7 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
         ];
 
 
-        $form['route'] = [
+        $form['messages']['route'] = [
             '#type'           => 'textarea',
             '#title'          => 'Route field text',
             '#description'    => $this->t('Enter the text to accompany route # field'),
@@ -69,7 +92,7 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
             '#default_value'  => $config->get('route'), 
         ];
 
-        $form['sr'] = [
+        $form['messages']['sr'] = [
             '#type'           => 'textarea',
             '#title'          => 'SR error message ',
             '#description'    => $this->t('Enter the error text they see if the enter thr route # of and SR'),
@@ -82,33 +105,34 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
 
 
 
-    $form['actions'] = [
-      '#type' => 'actions',
-    ];
+        $form['actions'] = [
+            '#type' => 'actions',
+        ];
 
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Save'),
-    ];
+        $form['actions']['submit'] = [
+            '#type' => 'submit',
+            '#value' => $this->t('Save'),
+        ];
 
-    return $form;
-  }
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state) {
 
-     $values = $form_state->getValues();
+        $values = $form_state->getValues();
 
-     $this->config('rusa_perm_ride.settings')
-           ->set('instructions', $values['instructions'])
-           ->set('search',       $values['search'])
-           ->set('route',        $values['route'])
-           ->set('sr',           $values['sr'])
-           ->save();
+        $this->config('rusa_perm_ride.settings')
+                ->set('swurl',        $values['swurl'])
+                ->set('instructions', $values['instructions'])
+                ->set('search',       $values['search'])
+                ->set('route',        $values['route'])
+                ->set('sr',           $values['sr'])
+                ->save();
 
-    parent::submitForm($form, $form_state);
-  }
+        parent::submitForm($form, $form_state);
+    }
 
 }
