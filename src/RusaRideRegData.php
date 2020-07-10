@@ -35,7 +35,8 @@ class RusaRideRegData {
 		$storage = \Drupal::service('entity_type.manager')->getStorage('rusa_perm_reg_ride');
 		$query = $storage->getQuery()
             ->condition('status', 1)
-            ->condition('uid', $uid);
+            ->condition('uid', $uid)
+            ->sort('field_date_of_ride', 'DESC');
 
         $query_result = $query->execute();
 
