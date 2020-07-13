@@ -36,7 +36,7 @@ class RusaRideRegData {
 		$query = $storage->getQuery()
             ->condition('status', 1)
             ->condition('uid', $uid)
-            ->sort('field_date_of_ride', 'DESC');
+            ->sort('field_date_of_ride');
 
         $query_result = $query->execute();
 
