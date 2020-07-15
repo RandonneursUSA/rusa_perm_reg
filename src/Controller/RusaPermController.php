@@ -57,24 +57,28 @@ class RusaPermController  extends ControllerBase {
         // Data was passed in a Post
         $request = $this->request->getCurrentRequest();
         $results = $request->request->all();
+                
+        $this->getLogger('rusa_perm_reg')->notice('Perm program payment post received');
         
-        \Drupal::logger('rusa_perm_reg')->error('Payment post %results', ['%results' => print_r($results)]);
-        // '<pre><code>' . print_r($responseObj, TRUE) . '</code></pre>'
+        // This is the data we should receive
+        $regid  = $results['regid'];
+        // $mid    = $results['mid']; We don't actually need this
         
-        /*$regid   = $results['regid'];
-        $rsid    = $results['mid'];
+        if (empty($regid)) {
+            // Log an error message
+            $this->getLogger('rusa_perm_reg')->error('Perm program payment missing parameter regid %regid',['%regid' => $regid]);
+        }           
+        else {
+            // Load the registration entity which was passed back to us in $regid
+            $storage = $this->entityTypeManager->getStorage('rusa_perm_registration');
+            $reg     = $storage->load($regid); 
 
-        // Load the registration entity which was passed back to us in $regid
-        $storage = $this->entityTypeManager->getStorage('rusa_perm_registration');
-        $reg     = $storage->load($regid); 
-
-        // Set the payment received boolean and the date
-        $reg->set('field_payment_received', TRUE);
-        $reg->set('field_date_payment_received', date('Y-m-d', time()));
-        $reg->save();
-*/
-        // That's it we're done here.
-
+            // Set the payment received boolean and the date
+            $reg->set('field_payment_received', TRUE);
+            $reg->set('field_date_payment_received', date('Y-m-d', time()));
+            $reg->save();
+        }
+        
         return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); 
 	}
 	
