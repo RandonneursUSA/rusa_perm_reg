@@ -57,7 +57,11 @@ class RusaPermController  extends ControllerBase {
         // Data was passed in a Post
         $request = $this->request->getCurrentRequest();
         $results = $request->request->all();
-        $regid   = $results['regid'];
+        
+        \Drupal::logger('rusa_perm_reg')->error('Payment post %results', ['%results' => print_r($results)]);
+        // '<pre><code>' . print_r($responseObj, TRUE) . '</code></pre>'
+        
+        /*$regid   = $results['regid'];
         $rsid    = $results['mid'];
 
         // Load the registration entity which was passed back to us in $regid
@@ -68,7 +72,7 @@ class RusaPermController  extends ControllerBase {
         $reg->set('field_payment_received', TRUE);
         $reg->set('field_date_payment_received', date('Y-m-d', time()));
         $reg->save();
-
+*/
         // That's it we're done here.
 
         return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); 
