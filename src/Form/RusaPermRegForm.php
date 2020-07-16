@@ -216,50 +216,41 @@ class RusaPermRegForm extends ConfirmFormBase {
 
             // Show existing perm ride registrations
             if ($ridedata = $this->rideregdata->get_registrations() ) {
-                $form['rideregtop'] = ['#type' => 'item', '#markup' => $this->t('<h3>Your current perm registrations.</h3>')];
+                $form['rideregtop'] = [
+                    '#type'   => 'item', 
+                    '#markup' => $this->t('<h3>Your current perm registrations.</h3>')
+                ];
+                
      			$form['ridereg'] = $this->get_current_registrations($ridedata);       
             }
  
-            // Display  a link to the route search page
-            $search_link = $this->get_search_link();
-            
-            $form['search'] = [
+ 
+            // Register for perm ride             
+            $form['rideperm'] = [
                 '#type'     => 'item',
-                '#markup'   => $search_link,                
-            ];
-
- /*
-            // Display  a link to the route search page
-            $search_link = $this->get_search_link();
-
-
-            $form['ride_instruct'] = [
+                '#markup'   => $this->t('<h3>Register to ride a permanent.</h3>'),
+                            
+            ]; 
+ 
+             $form['rideinstruct'] = [
                 '#type'     => 'item',
                 '#markup'   => $this->t($this->settings['ride']['instructions']),
             ];
-
-            $form['search'] = [
-                '#type'     => 'item',
-                '#markup'   => $this->t($search_link . '<br /><br />' . $this->settings['ride']['route']),
-            ];
-
-
+ 
             $form['pid'] = [
                 '#type'         => 'textfield',
                 '#title'        => $this->t('Route #'),                
                 '#size'         => 6,
             ];
 
-            $this->step = 'ridereg';
- 
-            $form['actions'] = [
+             $form['actions'] = [
                 'submit' => [
                     '#type'  => 'submit',
-                    '#value' => 'Register for perm ride',
+                    '#value' => 'Find a route and register to ride',
                 ],
             ];
-*/
-
+            
+            $this->step = 'ridereg';           
         }
         
         // Save reg status
@@ -286,31 +277,35 @@ class RusaPermRegForm extends ConfirmFormBase {
         if ($this->step === 'confirm') {
             return;
         }
-        elseif ($this->step === 'ridereg') {
         
+        elseif ($this->step === 'ridereg') {
+          
             // Check route validity
             $pid = $form_state->getValue('pid');
-            $route_valid = $this->is_route_valid($pid);
+            if (!empty($pid)) {       
+                $route_valid = $this->is_route_valid($pid);
        
-            if ($route_valid == 'sr') {            
-                // Compute the error message for SR-600                
-                $link = $this->get_sr_link();             
-                $msg = $this->settings['ride']['sr'];   
-                $msg = str_replace('[perm:id]', $pid, $msg);
-                $msg = str_replace('[perm:link]', $link, $msg);
+                if ($route_valid == 'sr') {            
+                    // Compute the error message for SR-600                
+                    $link = $this->get_sr_link();             
+                    $msg = $this->settings['ride']['sr'];   
+                    $msg = str_replace('[perm:id]', $pid, $msg);
+                    $msg = str_replace('[perm:link]', $link, $msg);
                                 
-                $form_state->setErrorByName('pid', $this->t($msg));
-            }
-            elseif ($route_valid == 'inactive') {
-                $form_state->setErrorByName('pid', $this->t('Permanent route %pid is not active.', ['%pid' => $pid]));
-            }
-            elseif ($route_valid == 'invalid') {
-                $form_state->setErrorByName('pid', $this->t('%pid is not a valid permanent route number.', ['%pid' => $pid]));
-            }       
-            elseif ($route_valid == 'valid') {
-                $this->pid = $pid;
+                    $form_state->setErrorByName('pid', $this->t($msg));
+                }
+                elseif ($route_valid == 'inactive') {
+                    $form_state->setErrorByName('pid', $this->t('Permanent route %pid is not active.', ['%pid' => $pid]));
+                }
+                elseif ($route_valid == 'invalid') {
+                    $form_state->setErrorByName('pid', $this->t('%pid is not a valid permanent route number.', ['%pid' => $pid]));
+                }       
+                elseif ($route_valid == 'valid') {
+                    $this->pid = $pid;
+                }            
             }
         }
+        
     } // End function validate
 
 
@@ -324,9 +319,13 @@ class RusaPermRegForm extends ConfirmFormBase {
     
         // Don't submit the form until after confirmation
         if ($this->step === 'ridereg') {
-            $form_state->setRebuild();
-            $this->step = 'confirm';
-            return;
+            $pid = $form_state->getValue('pid');
+            if (empty($pid)) {            
+                $form_state->setRedirect('rusa_perm_select.form');
+            }
+            else {
+                $form_state->setRedirect('rusa_perm_select.form', ['pid' => $pid]);
+            }
         }
         elseif ($this->step === 'progreg') {
     
@@ -357,16 +356,8 @@ class RusaPermRegForm extends ConfirmFormBase {
 
                     $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
                 }
-
             }
-        }
-        elseif ($this->step === 'confirm') {           
-            // Ride registration has been confirmed so save it and redirect to SmartWaiver
-            $url = $this->smartwaiver_url($this->pid);
-            $response = new TrustedRedirectResponse($url);
-            $form_state->setResponse($response);        
-            
-        }
+        }      
     }
 
     /* Private Functions */ 
@@ -389,23 +380,6 @@ class RusaPermRegForm extends ConfirmFormBase {
     }
 
    
-    /**
-     * Generate Smartwaiver URl
-     *
-     */
-    protected function smartwaiver_url($pid) { 
-        // Get URL from settings
-        $swurl = $this->settings['ride']['swurl'];
-        // $swurl = 'https://waiver.smartwaiver.com/w/5eea4cfb2b05a/web/';
-        $swurl .= '?wautofill_firstname='   . $this->uinfo['fname'];
-        $swurl .= '&wautofill_lastname='    . $this->uinfo['lname'];
-        $swurl .= '&wautofill_dobyyyymmdd=' . $this->uinfo['dob'];
-        $swurl .= '&wautofill_tag='         . $this->uinfo['mid'] . ':' . $pid;
-
-        return $swurl;
-        
-    }
-
 	/**
 	 * Get a table of current registrations
      *
@@ -483,22 +457,6 @@ class RusaPermRegForm extends ConfirmFormBase {
 	}
 	
 	
-
-    /**
-     * Build a link to the perm search page
-     *
-     */
-    protected function get_search_link(){        
-        //$url = Url::fromRoute('rusa_perm.search');
-        //$url->setOption('attributes',  ['target' => '_blank']);
-        //return Link::fromTextAndUrl('Search for a route #', $url)->toString();
-
-        $url = Url::fromRoute('rusa_perm_select.form');
-        $url->setOption('attributes', ['class' => 'rusa-button']);
-        return Link::fromTextAndUrl('Find a route and register to ride', $url)->toString();
-        
-    }
-
     /**
      * Build a link to the payment page
      *
@@ -539,7 +497,4 @@ class RusaPermRegForm extends ConfirmFormBase {
         return Link::fromTextAndUrl('SR-600 page', $url)->toString();
     }
  
- 
- 
-
 } // End of class  
