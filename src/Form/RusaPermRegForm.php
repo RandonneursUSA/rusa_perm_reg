@@ -219,7 +219,16 @@ class RusaPermRegForm extends ConfirmFormBase {
                 $form['rideregtop'] = ['#type' => 'item', '#markup' => $this->t('<h3>Your current perm registrations.</h3>')];
      			$form['ridereg'] = $this->get_current_registrations($ridedata);       
             }
-        
+ 
+            // Display  a link to the route search page
+            $search_link = $this->get_search_link();
+            
+            $form['search'] = [
+                '#type'     => 'item',
+                '#markup'   => $search_link,                
+            ];
+
+ /*
             // Display  a link to the route search page
             $search_link = $this->get_search_link();
 
@@ -249,18 +258,8 @@ class RusaPermRegForm extends ConfirmFormBase {
                     '#value' => 'Register for perm ride',
                 ],
             ];
-
-/*
-            // Display a link to sign the waiver
-            $waiver_link = $this->smartwaiver_link(); 
-
-            // Some instructions with the Smart Waiver link
-            $form['instruct2'] = [
-                '#type'     => 'item',
-                '#markup'   => $this->t('Once you have the route # of the perm you want to ride,  you can  ' .
-                '<br />' . $waiver_link),
-            ];
 */
+
         }
         
         // Save reg status
@@ -407,8 +406,6 @@ class RusaPermRegForm extends ConfirmFormBase {
         
     }
 
-
-
 	/**
 	 * Get a table of current registrations
      *
@@ -491,10 +488,15 @@ class RusaPermRegForm extends ConfirmFormBase {
      * Build a link to the perm search page
      *
      */
-    protected function get_search_link(){
-        $url = Url::fromRoute('rusa_perm.search');
-        $url->setOption('attributes',  ['target' => '_blank']);
-        return Link::fromTextAndUrl('Search for a route #', $url)->toString();
+    protected function get_search_link(){        
+        //$url = Url::fromRoute('rusa_perm.search');
+        //$url->setOption('attributes',  ['target' => '_blank']);
+        //return Link::fromTextAndUrl('Search for a route #', $url)->toString();
+
+        $url = Url::fromRoute('rusa_perm_select.form');
+        $url->setOption('attributes', ['class' => 'rusa-button']);
+        return Link::fromTextAndUrl('Find a route and register to ride', $url)->toString();
+        
     }
 
     /**
