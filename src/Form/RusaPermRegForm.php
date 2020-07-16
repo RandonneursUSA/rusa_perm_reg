@@ -12,9 +12,6 @@
  * Provides registration for the Perm Program
  * as well as ride registration.
  * 
- * Integrates with SmartWaiver through the API
- *
- * Integrates with old backend through Perl Scripts
  *
  * ----------------------------------------------------------------------------------------
  * 
@@ -22,7 +19,7 @@
 
 namespace Drupal\rusa_perm_reg\Form;
 
-use Drupal\Core\Form\ConfirmFormBase;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
@@ -44,7 +41,7 @@ use Drupal\rusa_api\Client\RusaClient;
  * All of the form handling is within this class.
  *
  */
-class RusaPermRegForm extends ConfirmFormBase {
+class RusaPermRegForm extends FormBase {
 
     protected $settings;
     protected $ride_settings;
@@ -90,28 +87,6 @@ class RusaPermRegForm extends ConfirmFormBase {
         );
     }
 
-   /**
-    * {@inheritdoc}
-    */
-    public function getCancelUrl() {        
-        return new Url('rusa_perm.reg', ['user' => $this->uinfo['uid']]);
-    }
-
-    /**
-    * {@inheritdoc}
-    */
-    public function getQuestion() {
-       
-        return $this->t("Is this the perm you want to ride?");
-    }
-    
-    /**
-    * {@inheritdoc}
-    */
-    public function getDescription() {
-        return $this->t("Please confirm your choice.");
-    }
-    
 
     /**
      * @buildForm
@@ -119,25 +94,7 @@ class RusaPermRegForm extends ConfirmFormBase {
      *
      */
     public function buildForm(array $form, FormStateInterface $form_state) {  
-    
-        // Confirmation step
-        if ($this->step === 'confirm') {
-            $form = parent::buildForm($form, $form_state);
-            
-            // Display the selected perm
-            $form['perm'] = $this->get_perm($form_state->getValue('pid'));
-                        
-            $form['remember'] = [
-                '#type'   => 'item',
-                '#markup' => $this->t('Remember the Route #, you’ll need to re-enter it on the waiver.'),
-            ];
-            
-            // Attach css to hide the local action tabs
-            $form['#attached']['library'][] = 'rusa_perm_reg/rusa_perm_style';
-            $form['actions']['submit']['#value'] = $this->t('Sign the waiver');
-            return $form;
-        }
-
+       
         // Start the form
         $form[] = [
             '#title'  => $this->t('Program Registration'),
@@ -189,14 +146,8 @@ class RusaPermRegForm extends ConfirmFormBase {
 
             $this->step = 'progreg';
              
-            $form['actions'] = [
-                '#type'   => 'actions',
-                'cancel'  => [
-                    '#type'  => 'submit',
-                    '#value' => 'Cancel',
-                    '#attributes' => ['onclick' => 'if(!confirm("Do you really want to cancel?")){return false;}'],
-                ],
-                'ride_submit' => [
+            $form['actions'] = [               
+                'submit' => [
                     '#type'  => 'submit',
                     '#value' => 'Register for the  Perm Program',
                 ],
@@ -272,14 +223,9 @@ class RusaPermRegForm extends ConfirmFormBase {
      * Required
      *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-    
-        if ($this->step === 'confirm') {
-            return;
-        }
-        
-        elseif ($this->step === 'ridereg') {
-          
+    public function validateForm(array &$form, FormStateInterface $form_state) {       
+            
+        if ($this->step === 'ridereg') {          
             // Check route validity
             $pid = $form_state->getValue('pid');
             if (!empty($pid)) {       
@@ -317,47 +263,41 @@ class RusaPermRegForm extends ConfirmFormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
     
-        // Don't submit the form until after confirmation
+        // For ridereg we redirect to select form
         if ($this->step === 'ridereg') {
             $pid = $form_state->getValue('pid');
             if (empty($pid)) {            
-                $form_state->setRedirect('rusa_perm_select.form');
+                $form_state->setRedirect('rusa_perm.select');
             }
             else {
-                $form_state->setRedirect('rusa_perm_select.form', ['pid' => $pid]);
+                $form_state->setRedirect('rusa_perm.select', ['pid' => $pid]);
             }
         }
         elseif ($this->step === 'progreg') {
-    
-            $action = $form_state->getTriggeringElement();
+            
+            // Check for existing program registration
+            if ($this->regstatus['reg_exists']) {
+                // Registration exists so we are just going to relace the waiver
+                $reg = $this->regdata->get_reg_entity();
 
-            if ($action['#value'] == "Cancel") {
-                $form_state->setRedirect('user.page');
             }
             else {
+                // New registration
+                // Create the registration entity
+                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
+                        [
+                        'uid'		  => $this->uinfo['uid'],
+                        'status'      => 1,
+                        'field_rusa_' => $this->uinfo['mid'],
+                        ]);
+                $reg->save();
+                $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
+                $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
 
-                if ($this->regstatus['reg_exists']) {
-                    // Registration exists so we are just going to relace the waiver
-                    $reg = $this->regdata->get_reg_entity();
-
-                }
-                else {
-                    // New registration
-                    // Create the registration entity
-                    $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
-                            [
-                            'uid'		  => $this->uinfo['uid'],
-                            'status'      => 1,
-                            'field_rusa_' => $this->uinfo['mid'],
-                            ]);
-                    $reg->save();
-                    $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
-                    $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
-
-                    $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
-                }
+                $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
             }
-        }      
+        }
+        
     }
 
     /* Private Functions */ 
