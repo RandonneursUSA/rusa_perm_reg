@@ -124,7 +124,7 @@ class ResultSubmit extends FormBase {
             '#type'     => 'radios',
             '#options'  => [
                 'dns' => $this->t('Did not start'),
-                'dnf' => $this->t('Did not finish,  or finsished out of time'),
+                'dnf' => $this->t('Did not finish,  or finished out of time'),
                 'fin' => $this->t('Completed the ride in'),
              ],
              '#default_value' => 'fin',

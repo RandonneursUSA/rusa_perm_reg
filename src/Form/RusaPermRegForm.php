@@ -116,10 +116,12 @@ class RusaPermRegForm extends FormBase {
             // Reg exists check payment
             if ($this->regdata->payment_received()) {
                 $payment = TRUE;
+                /*
                 $form['payment'] = [
                    '#type'   => 'item',
                    '#markup' => $this->t($this->settings['prog']['yes_payment']),
                 ];
+                */
             }
             else {
                 $form['payment'] = [
@@ -339,12 +341,16 @@ class RusaPermRegForm extends FormBase {
             
             // If ridedate is future we show cancel
             if ($reg['ride_date'] > date('Y-m-d')) {
-                $links['cancel'] = [
+            
+                $url = Url::fromRoute('rusa_perm.cancel', ['regid' => $id]);
+                $url->setOption('attributes', ['onclick' => 'if(!confirm("Do you really want to cancel this ride registration?")){return false;}']);
+                $links['cancel'] = [                
                     'title' => $this->t('Cancel registration'),
-                    'url'   =>  Url::fromRoute('rusa_perm.cancel', ['regid' => $id]),
+                    'url'   =>  $url,                    
                 ];
             }
             else {
+                $url = 
 			    $links['results'] = [
 				    'title' => $this->t('Submit results'),
 				    'url'  => Url::fromRoute('rusa_perm.submit', ['regid' => $id]),
