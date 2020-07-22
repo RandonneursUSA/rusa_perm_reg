@@ -28,6 +28,8 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaRegData;
 use Drupal\rusa_perm_reg\RusaRideRegData;
@@ -285,14 +287,20 @@ class RusaPermRegForm extends FormBase {
             }
             else {
                 // New registration
-                // Create the registration entity
+                               
+                // Create the registration entity                
                 $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
-                        [
+                    [
                         'uid'		  => $this->uinfo['uid'],
                         'status'      => 1,
                         'field_rusa_' => $this->uinfo['mid'],
-                        ]);
+                        'field_registration_year' => [
+                            'value'     => date("Y-m-d"),
+                            'end_value' => date("Y") . '-12-31',
+                        ],                        
+                    ]);               
                 $reg->save();
+
                 $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
                 $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
 
