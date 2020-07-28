@@ -15,12 +15,7 @@ label: 'Registration Year'
 description: 'The year this registration will be valid for. The registration at the end of this period.'
 required: false
 translatable: false
-default_value:
-  -
-    default_date_type: now
-    default_date: now
-    default_end_date_type: relative
-    default_end_date: '+1 year'
+default_value: {  }
 default_value_callback: ''
 settings: {  }
 field_type: daterange

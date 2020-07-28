@@ -1,3 +1,5 @@
-instructions: 'To register to ride a perm you must first find the Route # of the perm you want to ride and then enter it here.'
-search: 'Find the Route # of the perm you want to ride using our search form.'
-route: 'Then enter the Route # here and click "Register"'
+instructions: 'If you know the Route # you want to ride enter it here, or just click the button to search for a route.'
+search: 'Search for a Route #'
+route: 'Enter the Route # here and click "Register"'
+sr: 'Permanent route [perm:id] is a Super Randonnée  600k.  Registering to ride a Super Randonnée 600k is done directly through the route contact.  Contact the person listed in the Permanent Detail page for this route to register, or consult the [perm:link].'
+swurl: 'https://waiver.smartwaiver.com/w/5f08431ec6126/web/'

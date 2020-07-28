@@ -9,6 +9,10 @@ is_admin: null
 permissions:
   - 'access rusa perm registration overview'
   - 'administer rusa perm registration'
+  - 'administer rusa_perm_reg_ride fields'
+  - 'administer rusa_perm_reg_ride form display'
+  - 'administer rusa_perm_registration fields'
+  - 'administer rusa_perm_registration form display'
   - 'create rusa perm registration'
   - 'edit rusa perm registration'
   - 'view rusa perm registration'
