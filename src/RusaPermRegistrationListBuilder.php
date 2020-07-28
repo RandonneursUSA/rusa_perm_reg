@@ -28,6 +28,10 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
    * @var \Drupal\Core\Routing\RedirectDestinationInterface
    */
   protected $redirectDestination;
+  
+  protected $limit = 10;
+  
+  protected $type;
 
   /**
    * Constructs a new RusaPermRegistrationListBuilder object.
@@ -45,6 +49,7 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
     parent::__construct($entity_type, $storage);
     $this->dateFormatter = $date_formatter;
     $this->redirectDestination = $redirect_destination;
+    $this->type = $entity_type->id();
   }
 
   /**
@@ -63,6 +68,14 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function render() {
+  
+  /*
+    $build['checkbox'] = [
+        '#type'   => 'checkbox',
+        '#title'  => $this->t('Include disabled'),
+    ];
+    */    
+        
     $build['table'] = parent::render();
 
     $total = $this->getStorage()
@@ -70,7 +83,9 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
       ->count()
       ->execute();
 
-    $build['summary']['#markup'] = $this->t('Total rusa perm program registrations: @total', ['@total' => $total]);
+    $type = $this->type === 'rusa_perm_registration' ? 'Program' : 'Ride';
+
+    $build['summary']['#markup'] = $this->t('Total @type registrations: @total', ['@type' => $type, '@total' => $total]);
     return $build;
   }
 
@@ -90,7 +105,7 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\rusa_perm_reg\RusaPermRegistrationInterface */
+    /* @var $entity \Drupal\rusa_perm_reg\RusaPermRegRideInterface */
     $row['id'] = $entity->link();
     $row['status'] = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');
     $row['uid']['data'] = [

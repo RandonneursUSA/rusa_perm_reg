@@ -145,7 +145,7 @@ class RusaPermRegForm extends FormBase {
             // Just display a submit button to create a new program registration
             $form['newreg'] = [
                 '#type'   => 'item',
-                '#markup' => $this->t('Before you can ride any permanents you must register for the program'),
+                '#markup' => $this->t('Before you can ride permanents for RUSA distance credit you must register for the program.'),
             ];
 
             $this->step = 'progreg';

@@ -71,8 +71,7 @@ rusa_perm.select:
     _title: 'Search for a permanent'
     _form: '\Drupal\rusa_perm_reg\Form\RusaPermSelectForm'
   requirements:
-    _permission: 'create rusa perm registration'    
-    
+    _permission: 'create rusa perm registration'        
     
 rusa_perm.pay:
   path: '/cgi-bin/perm_pay.pl'

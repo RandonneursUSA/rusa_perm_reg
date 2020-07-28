@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a list controller for the rusa perm registration entity type.
  */
-class RusaPermRegistrationListBuilder extends EntityListBuilder {
+class RusaPermRideListBuilder extends EntityListBuilder {
 
   /**
    * The date formatter service.
@@ -28,6 +28,8 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
    * @var \Drupal\Core\Routing\RedirectDestinationInterface
    */
   protected $redirectDestination;
+  
+  protected limit = 20;
 
   /**
    * Constructs a new RusaPermRegistrationListBuilder object.
@@ -70,7 +72,7 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
       ->count()
       ->execute();
 
-    $build['summary']['#markup'] = $this->t('Total rusa perm program registrations: @total', ['@total' => $total]);
+    $build['summary']['#markup'] = $this->t('Total Permanent Ride registrations: @total', ['@total' => $total]);
     return $build;
   }
 

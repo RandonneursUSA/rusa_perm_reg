@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\rusa_perm_reg\RusaPermRegistrationInterface;
+use Drupal\rusa_perm_reg\RusaPermRegRideInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -21,7 +21,7 @@ use Drupal\user\UserInterface;
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\rusa_perm_reg\RusaPermRegistrationListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
- *     "access" = "Drupal\rusa_perm_reg\RusaPermRegistrationAccessControlHandler",
+ *     "access" = "Drupal\rusa_perm_reg\RusaPermRegRideAccessControlHandler",
  *     "form" = {
  *       "add" = "Drupal\rusa_perm_reg\Form\RusaPermRegRideForm",
  *       "edit" = "Drupal\rusa_perm_reg\Form\RusaPermRegRideForm",
@@ -56,7 +56,7 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "entity.rusa_perm_reg_ride.settings"
  * )
  */
-class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermRegistrationInterface {
+class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermRegRideInterface {
 
   use EntityChangedTrait;
 
@@ -141,7 +141,7 @@ class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermR
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setRevisionable(TRUE)
       ->setLabel(t('Status'))
-      ->setDescription(t('A boolean indicating whether the rusa perm registration is enabled.'))
+      ->setDescription(t('A boolean indicating whether the rusa perm ride is enabled.'))
       ->setDefaultValue(TRUE)
       ->setSetting('on_label', 'Enabled')
       ->setDisplayOptions('form', [
@@ -165,7 +165,7 @@ class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermR
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setRevisionable(TRUE)
       ->setLabel(t('Author'))
-      ->setDescription(t('The user ID of the rusa perm registration author.'))
+      ->setDescription(t('The user ID of the rusa perm ride author.'))
       ->setSetting('target_type', 'user')
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
@@ -186,7 +186,7 @@ class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermR
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setDescription(t('The time that the rusa perm registration was created.'))
+      ->setDescription(t('The time that the rusa perm ride was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -201,7 +201,7 @@ class RusaPermRegRide extends RevisionableContentEntityBase implements RusaPermR
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the rusa perm registration was last edited.'));
+      ->setDescription(t('The time that the rusa perm ride was last edited.'));
 
     return $fields;
   }
