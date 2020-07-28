@@ -231,7 +231,7 @@ class RusaPermRegForm extends FormBase {
             
         if ($this->step === 'ridereg') {          
             // Check route validity
-            $pid = $form_state->getValue('pid');
+            $pid = trim($form_state->getValue('pid'));
             if (!empty($pid)) {       
                 $route_valid = $this->is_route_valid($pid);
        

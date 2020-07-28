@@ -135,8 +135,8 @@ class RusaPermController  extends ControllerBase {
         foreach ($fields as $field) {
             $cfields[$field['displayText']] = $field['value'];
         }
-        $wmid = $cfields['RUSA #'];
-        $wpid = $cfields['Permanent Route #'];
+        $wmid = trim($cfields['RUSA #']);
+        $wpid = trim($cfields['Permanent Route #']);
         $date = $cfields['Ride Date YYYY-MM-DD'];
      
 		// Make sure mid matches what we passed in the tags

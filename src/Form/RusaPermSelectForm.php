@@ -117,7 +117,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
         // PID can be passed as a query parameter
         $pid =  \Drupal::request()->query->get('pid');
         if (!empty($pid)) {
-            $this->pid  = $pid;
+            $this->pid  = trim($pid);
             $this->step = 'confirm';
         }
         
