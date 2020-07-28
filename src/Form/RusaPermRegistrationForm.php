@@ -16,6 +16,7 @@ class RusaPermRegistrationForm extends ContentEntityForm {
   public function save(array $form, FormStateInterface $form_state) {
 
     $entity = $this->getEntity();
+    
     $result = $entity->save();
     $link = $entity->toLink($this->t('View'))->toRenderable();
 

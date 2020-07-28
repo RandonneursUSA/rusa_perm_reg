@@ -44,6 +44,7 @@ class ResultSubmit extends FormBase {
     protected $rideRegStorage;
     protected $uinfo;
     protected $reg;
+    protected $time;
 
     /**
      * @getFormID
@@ -87,14 +88,19 @@ class ResultSubmit extends FormBase {
         
         // Get the perm #
         $pid = $this->reg->get('field_perm_number')->getValue()[0]['value'];
+        $ride_date = $this->reg->get('field_date_of_ride')->getValue()[0]['value'];
 
         // Get the perm info
         $pobj = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
         $perm = $pobj->getPermanent($pid);
+        
+        // Save the time calculation
+        $this->time = $this->calculate_time($perm->dist);
+
 
         // Get the perm info we want to show in a table
         $rows = [
-            ['Ride date',      $this->reg->get('field_date_of_ride')->getValue()[0]['value']],
+            ['Ride date',      $ride_date],
             ['Route #',        $pid],
             ['Route name',     $perm->name],
             ['Distance (km)',  $perm->dist],
@@ -115,20 +121,25 @@ class ResultSubmit extends FormBase {
             '#attributes' => ['class' => 'rusa-table'],
         ];
 
-        // Pass some data in hidden fields
-        $form['pid'] = ['#type' => 'hidden', '#value' => $pid];
-        $form['mid'] = ['#type' => 'hidden', '#value' => $this->uinfo['mid']];
 
+        // Pass some data in hidden fields
+        $form['pid']   = ['#type' => 'hidden', '#value' => $pid];
+        $form['date']  = ['#type' => 'hidden', '#value' => $ride_date];
+        
+        
         // Display some radio buttons
+        
         $form['radio'] = [
             '#type'     => 'radios',
             '#options'  => [
                 'dns' => $this->t('Did not start'),
-                'dnf' => $this->t('Did not finish,  or finished out of time'),
+                'dnf' => $this->t('Did not finish,  or finished in more then %time minutes.', 
+                    ['%time' => $this->hours_and_minutes($this->time)]),
                 'fin' => $this->t('Completed the ride in'),
              ],
              '#default_value' => 'fin',
         ];
+        
 
         // Display time fields
         $form['hours'] = [
@@ -149,7 +160,7 @@ class ResultSubmit extends FormBase {
             'cancel'  => [
                 '#type'  => 'submit',
                 '#value' => 'Cancel',
-                '#attributes' => ['onclick' => 'if(!confirm("Do you really want to cancel?")){return false;}'],
+                '#attributes' => ['onclick' => 'if(!confirm("Click OK to cancel this result submission, or Cancel to return to result submission.")){return false;}'],
             ],
             'submit' => [
                 '#type'  => 'submit',
@@ -172,14 +183,28 @@ class ResultSubmit extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+        $action = $form_state->getTriggeringElement();
+        if ($action['#value'] == "Cancel") {
+            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+        }
 
-        // If radio = completed and time is empty
-        if ($form_state->getValue('radio') == 'fin' && $form_state->getValue('hours') < 2) {
-            $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
-         }   
-
-        // Will need to validate time within limit here
-
+        elseif ($form_state->getValue('radio') == 'fin') {
+            // If radio = completed and time is empty
+            if ($form_state->getValue('hours') < 2) {
+                $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
+            }           
+            else {
+                // Validate time within limit here
+                $time = ($form_state->getValue('hours') * 60 ) + $form_state->getValue('minutes');
+                if ($time > $this->time) {
+                    $form_state->setValueForElement($form['radio'], 'dnf');
+                    $form_state->setValueForElement($form['hours'], '');
+                    $form_state->setValueForElement($form['minutes'], '');
+                    $form_state->setError($form, $this->t('Your finish time of %fintime exceeds the maximum allowed time of %time.', 
+                        ['%fintime' => $this->hours_and_minutes($time),'%time' => $this->hours_and_minutes($this->time)]));
+                }     
+            }
+        }
     } // End function validate
 
 
@@ -193,27 +218,45 @@ class ResultSubmit extends FormBase {
         $action = $form_state->getTriggeringElement();
     
         if ($action['#value'] == "Cancel") {
-            $form_state->setRedirect('user.page');
+            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
         }
+                
         else {
+            if ($form_state->getValue('radio') === 'dns') {
+                // Just cancel the registration
+            
+                $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);    
+            }
+                    
             $results = [
-                'status'  => $form_state->getValue('radio'),
-                'hours'   => $form_state->getValue('hours'),
-                'minutes' => $form_state->getValue('minutes'),
-                'pid'     => $form_state->getValue('pid'),
-                'mid'     => $form_state->getValue('mid'),
+                'rider1-id'         => $this->uinfo['mid'],
+                'rider1-firstName'  => $this->uinfo['fname'],
+                'rider1-lastName'   => $this->uinfo['lname'],
+                'rider1-hours'      => $form_state->getValue('hours'),            
+                'rider1-minutes'    => $form_state->getValue('minutes'),
+                'permid'            => $form_state->getValue('pid'),
+                'date'              => $form_state->getValue('date'),
+                'riderCount'        => 1,
+                'accept'            => 1,
+                'drupal'            => 1,
+                'rider1-dnf'        => $form_state->getValue('radio') === 'dnf' ? 'true' : 'false',
             ];
-
+                         
             $resobj = new RusaPermResults($results);
             $response = $resobj->post();
             
-            if(isset($response->rsid)) {
+            if (isset($response->rsid)) {
                 $this->save_reg_data($response->rsid);
                 $this->messenger()->addStatus($this->t('Your results have been saved', []));
             }
-            else {
+            elseif (isset($response->errors)) {
                 // Respond to error
-                 $this->messenger()->addStatus($this->t('Your results have not been saved', []));
+
+                //$messsage = implode('<br />', $response->errors); // Should work but doesn't
+                foreach ($response->errors as $error) {
+                    $message .= '<br />' . $error;
+                }                
+                $this->messenger()->addError($this->t("Result submit returned the following errors: $message", []));
             }
 
             // Send the user back to main perm page
@@ -251,5 +294,25 @@ class ResultSubmit extends FormBase {
         return($uinfo);
     }
 
+    /**
+     * Calculate time cutoff
+     *
+     * Return time in minutes
+     */
+    protected function calculate_time($dist) {
+        return floor(60 * ($dist / 15.0));    
+    }
 
+    /**
+     *
+     * return time as hours and minutes
+     *
+     */
+     protected function hours_and_minutes($time) {
+        $hours = floor($time/60);
+        $minutes = $time%60;
+        return $hours . ' hours and ' . $minutes . ' minutes';
+    }
+     
+    
 } // End of class  

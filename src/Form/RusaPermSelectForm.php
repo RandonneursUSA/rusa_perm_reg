@@ -385,7 +385,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
    
     
     /**
-	 * Get a table of current registrations
+	 * Show table of perm details.
      *
      */
      protected function get_perm($pid) {        
