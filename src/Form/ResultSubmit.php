@@ -133,7 +133,7 @@ class ResultSubmit extends FormBase {
             '#type'     => 'radios',
             '#options'  => [
                 'dns' => $this->t('Did not start'),
-                'dnf' => $this->t('Did not finish,  or finished in more then %time minutes.', 
+                'dnf' => $this->t('Did not finish,  or finished in more than %time.', 
                     ['%time' => $this->hours_and_minutes($this->time)]),
                 'fin' => $this->t('Completed the ride in'),
              ],
@@ -197,11 +197,21 @@ class ResultSubmit extends FormBase {
                 // Validate time within limit here
                 $time = ($form_state->getValue('hours') * 60 ) + $form_state->getValue('minutes');
                 if ($time > $this->time) {
-                    $form_state->setValueForElement($form['radio'], 'dnf');
-                    $form_state->setValueForElement($form['hours'], '');
-                    $form_state->setValueForElement($form['minutes'], '');
-                    $form_state->setError($form, $this->t('Your finish time of %fintime exceeds the maximum allowed time of %time.', 
+                    // Time has exceeded limit
+                    
+                    // This is the only way I found to set these values
+                    $input = $form_state->getUserInput();
+                    $input['radio'] = 'dnf';
+                    $input['hours'] = '';
+                    $input['minutes'] = '';
+                    $form_state->setUserInput($input);
+                    
+                    $this->messenger()->addError($this->t('Your finish time of %fintime exceeds the maximum allowed time of %time.', 
                         ['%fintime' => $this->hours_and_minutes($time),'%time' => $this->hours_and_minutes($this->time)]));
+                    
+                    // Go back to the form
+                    $form_state->setRebuild();
+                    
                 }     
             }
         }
@@ -220,14 +230,15 @@ class ResultSubmit extends FormBase {
         if ($action['#value'] == "Cancel") {
             $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
         }
-                
-        else {
-            if ($form_state->getValue('radio') === 'dns') {
-                // Just cancel the registration
-            
-                $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);    
-            }
-                    
+
+        elseif ($form_state->getValue('radio') === 'dns') {
+            // Just cancel the registration
+            $this->save_reg_data('dns');
+            $this->messenger()->addStatus($this->t('Your results have been saved', []));
+            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);    
+        }
+        
+        else {            
             $results = [
                 'rider1-id'         => $this->uinfo['mid'],
                 'rider1-firstName'  => $this->uinfo['fname'],
@@ -246,13 +257,12 @@ class ResultSubmit extends FormBase {
             $response = $resobj->post();
             
             if (isset($response->rsid)) {
-                $this->save_reg_data($response->rsid);
+                $rsid = $form_state->getValue('radio') === 'dnf' ? $response->rsid : 'dnf';
+                $this->save_reg_data($rsid);
                 $this->messenger()->addStatus($this->t('Your results have been saved', []));
             }
             elseif (isset($response->errors)) {
-                // Respond to error
-
-                //$messsage = implode('<br />', $response->errors); // Should work but doesn't
+                // Display error messages
                 foreach ($response->errors as $error) {
                     $message .= '<br />' . $error;
                 }                
