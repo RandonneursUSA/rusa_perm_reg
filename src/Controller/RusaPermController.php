@@ -78,8 +78,8 @@ class RusaPermController  extends ControllerBase {
             $reg->set('field_date_payment_received', date('Y-m-d', time()));
             $reg->save();
         }
-        
-        return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); 
+        return ['#markup' => 'Payment posted to perm program registration # ' . $regid];
+        // return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); 
 	}
 	
 	/**
