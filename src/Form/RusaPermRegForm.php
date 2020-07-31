@@ -419,6 +419,7 @@ class RusaPermRegForm extends FormBase {
         $regid = $this->regdata->get_reg_id();
         $url = Url::fromRoute('rusa_perm.pay');
         $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
+        $url->setOption('attributes', ['target' => '_blank']);
         return Link::fromTextAndUrl('Proceed to the payment page', $url)->toString();
     }
     
