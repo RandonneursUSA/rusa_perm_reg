@@ -178,6 +178,11 @@ class RusaPermRegForm extends FormBase {
                 
      			$form['ridereg'] = $this->get_current_registrations($ridedata);       
             }
+            
+            form['tempmsg'] [
+                '#type'     => 'markup',
+                '#markup'   => $this->t('<h3>Result submission is temproarily disabled. Check back soon.</h3>'),
+            ];
  
  
             // Register for perm ride             
@@ -357,6 +362,7 @@ class RusaPermRegForm extends FormBase {
                     'url'   =>  $url,                    
                 ];
             }
+            /*
             else {
                 $url = 
 			    $links['results'] = [
@@ -364,6 +370,7 @@ class RusaPermRegForm extends FormBase {
 				    'url'  => Url::fromRoute('rusa_perm.submit', ['regid' => $id]),
 			    ];
             }
+            */
 
 			// Add operations links
 			$row[] = [ 
