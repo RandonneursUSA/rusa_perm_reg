@@ -30,10 +30,12 @@ class RideRegFixDnf extends ViewsBulkOperationsActionBase {
    * {@inheritdoc}
    */
   public function execute($entity = NULL) {
-    // Do some processing..
+    $entity->set('field_rsid', '');
+    $entity->set('status', 1);
+    $entity->save();
 
     // Don't return anything for a default completion message, otherwise return translatable markup.
-    return $this->t('Some result');
+    return $this->t('Fixed DNFs');
   }
 
   /**
