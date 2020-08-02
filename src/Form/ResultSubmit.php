@@ -252,12 +252,12 @@ class ResultSubmit extends FormBase {
                 'drupal'            => 1,
                 'rider1-dnf'        => $form_state->getValue('radio') === 'dnf' ? 'true' : 'false',
             ];
-                         
+                        
+            // Post results to the perm backend             
             $resobj = new RusaPermResults($results);
             $response = $resobj->post();
             
             if (isset($response->rsid)) {
-                $rsid = $form_state->getValue('radio') === 'dnf' ? $response->rsid : 'dnf';
                 $this->save_reg_data($rsid);
                 $this->messenger()->addStatus($this->t('Your results have been saved', []));
             }
