@@ -179,7 +179,7 @@ class RusaPermRegForm extends FormBase {
      			$form['ridereg'] = $this->get_current_registrations($ridedata);       
             }
             
-            form['tempmsg'] [
+            $form['tempmsg'] = [
                 '#type'     => 'markup',
                 '#markup'   => $this->t('<h3>Result submission is temproarily disabled. Check back soon.</h3>'),
             ];

@@ -2,9 +2,8 @@
 
 /**
  * Action for Views Bulk Operations
- * Approve a waiver
+ * Enable a ride registrtion
  *
- * We are not implementing this, but I'll leave the code for now
  *
  */
 
@@ -18,12 +17,12 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * Action description.
  *
  * @Action(
- *   id = "rusa_perm_reg_approve",
- *   label = @Translation("Approve perm program registrations"),
+ *   id = "rusa_perm_reg_ride_enable",
+ *   label = @Translation("Enable Ride Reg"),
  *   type = ""
  * )
  */
-class RusaPermRegApprove extends ViewsBulkOperationsActionBase {
+class RideRegEnable extends ViewsBulkOperationsActionBase {
 
   use StringTranslationTrait;
 

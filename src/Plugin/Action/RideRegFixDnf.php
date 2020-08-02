@@ -2,9 +2,8 @@
 
 /**
  * Action for Views Bulk Operations
- * Reject a waiver
+ * Fix broken result submissions
  *
- * We are not implementing this, but I'll leave the code for now
  *
  */
 
@@ -18,12 +17,12 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * Action description.
  *
  * @Action(
- *   id = "rusa_perm_reg_reject",
- *   label = @Translation("Mark waiver as invalid"),
+ *   id = "rusa_perm_reg_fix_dnf",
+ *   label = @Translation("Fix mistaken DNFs"),
  *   type = ""
  * )
  */
-class RusaPermRegReject extends ViewsBulkOperationsActionBase {
+class RideRegFixDnf extends ViewsBulkOperationsActionBase {
 
   use StringTranslationTrait;
 
