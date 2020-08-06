@@ -3,3 +3,5 @@ search: 'Search for a Route #'
 route: 'Enter the Route # here and click "Register"'
 sr: 'Permanent route [perm:id] is a Super Randonnée  600k.  Registering to ride a Super Randonnée 600k is done directly through the route contact.  Contact the person listed in the Permanent Detail page for this route to register, or consult the [perm:link].'
 swurl: 'https://waiver.smartwaiver.com/w/5f08431ec6126/web/'
+api_key: rusa
+webhook_key: sw_webhook_key
