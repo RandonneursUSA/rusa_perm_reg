@@ -2,15 +2,17 @@
 
 namespace Drupal\rusa_perm_reg\Controller;
 
-
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\smartwaiver\ClientInterface;
+use Drupal\key\KeyRepositoryInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Smartwaiver\Smartwaiver;
+use Smartwaiver\Exceptions\SmartwaiverHTTPException;
+
 /**
  * Rusa Perm Controller
  *
@@ -21,6 +23,7 @@ class RusaPermController  extends ControllerBase {
     protected $request;
     protected $entityTypeManager;
     protected $smartwaiverClient;
+    protected $keyRepository;
      
      
   /**
@@ -29,12 +32,15 @@ class RusaPermController  extends ControllerBase {
   public function __construct(AccountProxy $currentUser, 
                               RequestStack $request, 
                               EntityTypeManagerInterface $entityTypeManager,
-                              ClientInterface $smartwaiverClient) {
+                              KeyRepositoryInterface $key_repository) {
                               
       $this->currentUser       = $currentUser;
       $this->request           = $request;
       $this->entityTypeManager = $entityTypeManager;
-      $this->smartwaiverClient = $smartwaiverClient;
+      $this->keyRepository     = $key_repository;
+      
+      $api_key = \Drupal::config('rusa_perm_ride.settings')->get('api_key');      
+      $this->smartwaiverClient = new Smartwaiver($this->apiKey('rusa'));
   } 
 
 	/**
@@ -44,8 +50,8 @@ class RusaPermController  extends ControllerBase {
 		return new static(
           $container->get('current_user'),
           $container->get('request_stack'),
-          $container->get('entity_type.manager'),
-          $container->get('smartwaiver.client'),
+          $container->get('entity_type.manager'), 
+          $container->get('key.repository'),
 		);
 	 }
 
@@ -79,7 +85,7 @@ class RusaPermController  extends ControllerBase {
             $reg->save();
         }
         return ['#markup' => 'Payment posted to perm program registration # ' . $regid];
-        // return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); 
+        //return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); 
 	}
 	
 	/**
@@ -112,111 +118,89 @@ class RusaPermController  extends ControllerBase {
 
         $request   = \Drupal::request();
         $query     = $request->query; 
-    	$wid       = $query->get('waiverid');
+    	$wid       = $query->get('waiverid');    	
 
-		// The waiver may not be ready yet
-	    sleep(5);	
-       	$waiver = $this->smartwaiverClient->waiver($wid);
-       	
-		// Now we have the waiver
-        $tags      = $waiver->tags[0];
-        $fields    = $waiver->participants[0]['customParticipantFields'];
-
-        [$mid, $pid] = explode(' ', $tags);
-
-        /*
-        "10909"	"RUSA #"
-        "1095"	"Permanent Route #"
-        "2020-07-10"	"Ride Date YYYY-MM-DD"
-        "Jul 10, 2020"	"Ride Date"
-         */      
-
-        // Get the custom field data
-        foreach ($fields as $field) {
-            $cfields[$field['displayText']] = $field['value'];
+        // Get the waiver   	
+        $attempts = 1;
+        do {
+            try {
+       	        $waiver = $this->smartwaiverClient->getWaiver($wid);
+            }
+            catch(SmartwaiverHTTPException $se) {
+                $attempts++;
+                sleep(2);
+                continue;
+        
+            }
+            break;
+        } while($attempts < 5);
+        
+        if ($attempts == 5) {
+            $this->getLogger('rusa_perm_reg')->error('Could not retreive waiver %waiver.', ['%waiver' => $wid]);
+            $this->messenger()->addError('Could not retrieve waiver, please try registering again.');
         }
-        $wmid = trim($cfields['RUSA #']);
-        $wpid = trim($cfields['Permanent Route #']);
-        $date = $cfields['Ride Date YYYY-MM-DD'];
+        
+        else {
+            $this->getLogger('rusa_perm_reg')->notice('Waiver retrieved after %count attempts.', ['%count' => $attempts]);
+        
+          // Now we have the waiver
+            $tags      = $waiver->tags[0];
+            $fields    = $waiver->participants[0]->getArrayInput();
+            $pfields   = $fields['customParticipantFields'];
+
+            [$mid, $pid] = explode(' ', $tags);
+
+            // Get the custom field data
+            foreach ($pfields as $field) {
+                $cfields[$field['displayText']] = $field['value'];
+            }
+            $wmid = trim($cfields['RUSA #']);
+            $wpid = trim($cfields['Permanent Route #']);
+            $date = $cfields['Ride Date YYYY-MM-DD'];
      
-		// Make sure mid matches what we passed in the tags
-		if ($mid != $wmid) {
-            $this->messenger()->addWarning($this->t('RUSA # entered in waiver is not the same as the rider who submitted the form.'));
-            return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
-		}
+            // Make sure mid matches what we passed in the tags
+            if ($mid != $wmid) {
+                $this->messenger()->addWarning($this->t('RUSA # entered in waiver is not the same as the rider who submitted the form.'));
+                return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
+            }
 
-        // Make sure pid matches what we passed in the tags
-		if ($pid != $wpid) {
-            $this->messenger()->addWarning($this->t('Route # entered in waiver is not the same as what was entered in the form.'));
-            return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
-		}
+            // Make sure pid matches what we passed in the tags
+            if ($pid != $wpid) {
+                $this->messenger()->addWarning($this->t('Route # entered in waiver is not the same as what was entered in the form.'));
+                return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
+            }
 
 
-        // Convert the date
-        // $date = strtotime($cfields['Date you want to ride']);
-        // $date = date("Y-m-d", $date);
+            // Convert the date
+            // $date = strtotime($cfields['Date you want to ride']);
+            // $date = date("Y-m-d", $date);
 
-		// Save the registration
- 		$reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
-            [
-                'field_date_of_ride'    => $date,
-                'field_perm_number'     => $pid,
-                'field_waiver_id'       => $wid, 
-                'field_rusa_member_id'  => $mid,
-            ]);
-        $reg->save();
-
+            // Save the registration
+            $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
+                [
+                    'field_date_of_ride'    => $date,
+                    'field_perm_number'     => $pid,
+                    'field_waiver_id'       => $wid, 
+                    'field_rusa_member_id'  => $mid,
+                ]);
+            $reg->save();
+        }
+        
 		// Return to user profile Permanents tab
         return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
     }
 	
-	/* Waivers.
+    
+    /**
+     * @param string $name
      *
-     * Display a list of all waivers
-     *
+     * @return string
      */
-    public function waivers() {
-        $waivers = $this->smartwaiverClient->waivers([]);
-
-        foreach ($waivers['waivers'] as $waiver) {
-            $wids[] = $waiver['waiverId'];
-        }
-
-        // oop thought waiver ids and load each waiver
-        foreach ($wids as $wid) {
-            $waiver = $this->smartwaiverClient->waiver($wid);
-            //dpm($waiver);
-            $fields = $waiver->customWaiverFields;
-            $cfields = [];
-            foreach ($fields as $field) {
-                $cfields[$field['displayText']] = $field['value'];
-            }
-
-            // Get the signature which is a base64 encoded PNG
-            $img = $this->smartwaiverClient->get_signature($wid)->participantSignatures[0];
-
-            // Build the table rows
-            $rows[] = [
-                $waiver->createdOn,
-                $waiver->firstName,
-                $waiver->lastName,
-                $waiver->email,
-                $waiver->tags[0],
-                $cfields['Perm #'],
-                $cfields['Date you want to ride'],
-                $this->t("<img src='" . $img . "' alt='signature' style='max-height: 75px;' />"),
-            ];
-        }
-
-        $header = ['Created on', 'First name', 'Last name', 'Email', 'RUSA #', 'Perm #','Ride date', 'Signature'];
-        $output = [
-            '#theme'    => 'table',
-            '#header'   => $header,
-            '#rows'     => $rows,
-        ];
-
-        return($output);
-
+    protected function apiKey($key_id) {
+        $key = $this->keyRepository->getKey($key_id);
+        $value = trim($key->getKeyValue());
+        return $value;
     }
-
+    
+    
 } //EoC

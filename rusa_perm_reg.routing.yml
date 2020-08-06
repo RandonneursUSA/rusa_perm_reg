@@ -29,7 +29,7 @@ rusa_perm.payment:
     _title: 'Permanents Program Payment'
     _controller: '\Drupal\rusa_perm_reg\Controller\RusaPermController::payReceived'
   requirements:
-    _permission: 'create rusa perm registration'
+    _access: 'TRUE'
 
 rusa_perm.submit:
   path: '/rusa/perm/resultsubmit/{regid}'
@@ -48,14 +48,6 @@ rusa_perm.cancel:
   requirements:
     _permission: 'create rusa perm registration'
     regid: \d+
-
-rusa_perm.waivers:
-  path: '/rusa/waivers'
-  defaults:
-    _controller: '\Drupal\rusa_perm_reg\Controller\RusaPermController::waivers'
-    _title: 'Waivers'
-  requirements:
-    _permission: 'view rusa perm registration'
 
 rusa_perm.incoming:
   path: '/rusa/incoming'
