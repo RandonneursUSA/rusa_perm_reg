@@ -258,7 +258,7 @@ class ResultSubmit extends FormBase {
             $response = $resobj->post();
             
             if (isset($response->rsid)) {
-                $this->save_reg_data($rsid);
+                $this->save_reg_data($response->rsid);
                 $this->messenger()->addStatus($this->t('Your results have been saved', []));
             }
             elseif (isset($response->errors)) {

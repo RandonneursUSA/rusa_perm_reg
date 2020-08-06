@@ -48,6 +48,7 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
             '#group'  => 'rusa',
         ];
         
+        // SmartWaiver URL
         $form['settings']['swurl'] = [
             '#type'     => 'textfield',
             '#title'    => $this->t('SmartWaiver URL'),
@@ -55,6 +56,22 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
             '#default_value' => $config->get('swurl'),
         ];
         
+        // SmartWaiver API Key
+        $form['settings']['api_key'] = [
+            '#type' => 'key_select',
+            '#title' => $this->t('Smartwaiver API Key'),
+            '#default_value' => $config->get('api_key'),
+        ];
+
+        // SmartWaiver Webhook key
+        $form['settings']['webhook_key'] = [
+            '#type' => 'key_select',
+            '#title' => $this->t('Smartwaiver Webhook Private Key'),
+            '#default_value' => $config->get('webhook_key'),
+        ];
+        
+        
+        // Messages
         $form['messages'] = [
             '#type'   => 'details',
             '#title'  => $this->t('Messages'),
@@ -126,6 +143,8 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
 
         $this->config('rusa_perm_ride.settings')
                 ->set('swurl',        $values['swurl'])
+                ->set('api_key',      $values['api_key'])
+                ->set('webhook_key',  $values['webhook_key'])
                 ->set('instructions', $values['instructions'])
                 ->set('search',       $values['search'])
                 ->set('route',        $values['route'])
