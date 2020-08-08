@@ -405,11 +405,12 @@ class RusaPermSelectForm extends ConfirmFormBase {
 		}
 		
 	    // Get RwGPS link
-	    // @to-do - Check to make sure $perm->url is not empty.
-	    $url = URL::fromUri($perm->url);
-	    $url->setOption('attributes',  ['target' => '_blank']);
-		$rwgps = Link::fromTextAndUrl($perm->url, $url)->toString();
-			
+	    if (!empty($perm->url)) {
+            $url = URL::fromUri($perm->url);
+            $url->setOption('attributes',  ['target' => '_blank']);
+            $rwgps = Link::fromTextAndUrl($perm->url, $url)->toString();
+		}
+		
 		$rows = [
             ['Route #', ['data' => "$pid   <-- Copy this so you can paste it in the waiver.", 'class' => ['rusa-em']]],
             ['Route name',      $perm->name],

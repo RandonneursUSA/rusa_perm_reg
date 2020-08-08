@@ -342,6 +342,13 @@ class RusaPermRegForm extends FormBase {
 			$row = [];
 	        $links = [];
 
+            // Build the RWGPS link
+            if (!empty($reg['url'])) {
+                $url = URL::fromUri($reg['url']);
+                $url->setOption('attributes',  ['target' => '_blank']);
+                $reg['url'] = Link::fromTextAndUrl('Ride With GPS', $url)->toString();
+            }
+ 
 			// Add the data
 			foreach($reg as $key => $val) {
 				$row[] = $val;
@@ -380,7 +387,7 @@ class RusaPermRegForm extends FormBase {
    
 		return [
 			'#type'    => 'table',
-			'#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description', 'Operations'],
+			'#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description', 'Route', 'Operations'],
 			'#rows'     => $rows,
 			'#responsive' => TRUE,
 			'#attributes' => ['class' => ['rusa-table']],

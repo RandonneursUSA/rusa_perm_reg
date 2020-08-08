@@ -58,6 +58,7 @@ class RusaRideRegData {
                 'pdist'     => $perm->dist, 
                 'pclimb'    => $perm->climbing, 
                 'pdesc'     => $perm->description,
+                'url'     => $perm->url,
             ];
         }
         return($data);
