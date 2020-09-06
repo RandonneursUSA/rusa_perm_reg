@@ -86,6 +86,13 @@ class ResultSubmit extends FormBase {
         // Load the registration entity
         $this->reg = $this->rideRegStorage->load($regid);
         
+        // Check that results have not already been submitted
+        // This should never happen but ...
+        if (! $this->reg->get('field_rsid')->isEmpty()) {
+            $this->messenger()->addError($this->t('It appeard results have alreay been submitted for this ride. Please check your results.'));
+            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+        }
+        
         // Get the perm #
         $pid = $this->reg->get('field_perm_number')->getValue()[0]['value'];
         $ride_date = $this->reg->get('field_date_of_ride')->getValue()[0]['value'];
@@ -257,9 +264,17 @@ class ResultSubmit extends FormBase {
             $resobj = new RusaPermResults($results);
             $response = $resobj->post();
             
-            if (isset($response->rsid)) {
-                $this->save_reg_data($response->rsid);
-                $this->messenger()->addStatus($this->t('Your results have been saved', []));
+            if (isset($response->rsid)) {            
+                // Check that results have not already been submitted
+                // This should never happen but ...
+                if (! $this->reg->get('field_rsid')->isEmpty()) {
+                    $this->messenger()->addError($this->t('It appeard results have alreay been submitted for this ride. Please check your results.'));
+                    $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+                }
+                else {
+                    $this->save_reg_data($response->rsid);
+                    $this->messenger()->addStatus($this->t('Your results have been saved', []));
+                }
             }
             elseif (isset($response->errors)) {
                 // Display error messages

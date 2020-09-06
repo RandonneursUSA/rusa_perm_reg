@@ -11,6 +11,12 @@
  *
  * Returns status for various steps in the registration process
  *
+ * @todo
+ *  - uid should be passed in to constructor √
+ *  - eliminate date filter and get all active registration √
+ *  - store registrations in an array keyed by year √
+ *  - provide functions to get current and next year's registration
+ *
  * ----------------------------------------------------------------------------------------
  * 
  */
@@ -20,10 +26,7 @@ namespace Drupal\rusa_perm_reg;
 
 use Drupal\Core\Entity\Query;
 use Drupal\Core\Entity\Query\QueryInterface;
-use Drupal\file\Entity\File;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\user\Entity\User;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 /**
@@ -31,39 +34,31 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  */
 class RusaRegData {
 
-    protected $currentUser;
-    protected $uid;
     protected $reg;
     protected $regid;
-    protected $waiver;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct() {
-        $this->currentUser = \Drupal::currentUser();
-        $this->uid = $this->currentUser->id();
-
-      
-        // Get a date string suitable for use with entity query.
-        $date = new DrupalDateTime();
-        $date->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
-        $date = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+    public function __construct($uid) {
+       
 
         // Get registration data
-        // Query should only get registrations for the current year
 		$storage = \Drupal::service('entity_type.manager')->getStorage('rusa_perm_registration');
 		$query = $storage->getQuery()
             ->condition('status', 1)
-            ->condition('uid', $this->uid)
-  			->condition('field_registration_year.value', $date, '<=')
-  			->condition('field_registration_year.end_value', $date, '>');
-
+            ->condition('uid', $uid);
+  
         $query_result = $query->execute();
 
+        // Store registrations keyed by year
         foreach ($query_result as $id) {
-            $this->reg = $storage->load($id);
-            $this->regid = $id;
+            $reg = $storage->load($id);
+            $regid = $id;
+            $reg_dates = $reg->get('field_registration_year')->getValue();
+            $year = date('Y', strtotime($reg_dates[0]['value']));
+            $this->reg[$year] = $reg;
+            $this->regid[$year] = $regid;
         }
     }
 
@@ -72,8 +67,8 @@ class RusaRegData {
      * Get the registration entity
      *
      */
-     public function get_reg_entity() {
-         return $this->reg;
+     public function get_reg_entity($year) {
+         return $this->reg[$year];
     }
 
 
@@ -82,8 +77,8 @@ class RusaRegData {
    *
    * Return regid
    */
-  public function get_reg_id(){
-      return $this->regid;
+  public function get_reg_id($year){
+      return $this->regid[$year];
   }
 
 
@@ -92,8 +87,8 @@ class RusaRegData {
    *
    * Return boolean
    */
-  public function reg_exists() {
-      if ($this->reg) return TRUE;
+  public function reg_exists($year) {
+      if (! empty($this->reg[$year])) return TRUE;
   }
 
   /**
@@ -101,9 +96,9 @@ class RusaRegData {
    * 
    * return the registration dates
    */
-  public function get_reg_dates() {
-      if ($this->reg) {
-        $reg_dates = $this->reg->get('field_registration_year')->getValue();
+  public function get_reg_dates($year) {
+      if (! empty($this->reg[$year])) {
+        $reg_dates = $this->reg[$year]->get('field_registration_year')->getValue();
         return [$reg_dates[0]['value'], $reg_dates[0]['end_value']];
       }
   }  
@@ -114,10 +109,10 @@ class RusaRegData {
    *
    * return boolean
    */
-  public function payment_received() {
-      if ($this->reg) {
+  public function payment_received($year) {
+      if(! empty($this->reg[$year])) {
         // Check to see if payment has been received
-        $payment_flag = $this->reg->get('field_payment_received')->getValue();
+        $payment_flag = $this->reg[$year]->get('field_payment_received')->getValue();
         return $payment_flag[0]['value'] == 1 ? TRUE : FALSE;
       }
   }

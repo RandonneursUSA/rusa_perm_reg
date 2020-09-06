@@ -11,6 +11,10 @@
  *
  * Provides registration for the Perm Program
  * as well as ride registration.
+ *
+ * @todo
+ *   - Pass uid to RusaRegData constructor
+ *   - RusaRegData may return and array of registrations for this year and next.
  * 
  *
  * ----------------------------------------------------------------------------------------
@@ -55,6 +59,8 @@ class RusaPermRegForm extends FormBase {
     protected $regstatus;
     protected $step = 'start';
     protected $pid;
+    protected $this_year;
+    protected $next_year;
 
     /**
      * @getFormID
@@ -73,10 +79,14 @@ class RusaPermRegForm extends FormBase {
         $this->currentUser = $current_user;
         $this->entityTypeManager = $entityTypeManager;
         $this->uinfo = $this->get_user_info();
-        $this->regdata = new RusaRegData();
+        $this->regdata = new RusaRegData($this->uinfo['uid']);
         $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
         $this->settings['prog'] = \Drupal::config('rusa_perm_reg.settings')->getRawData();
         $this->settings['ride'] = \Drupal::config('rusa_perm_ride.settings')->getRawData();
+
+        // Store current and next year
+        $this->this_year = date('Y');
+        $this->next_year = date('Y', strtotime('+1 year'));
     }
 
     /**
@@ -112,11 +122,11 @@ class RusaPermRegForm extends FormBase {
         $good_to_go = $reg_exists = $payment  = FALSE;
 
         // Determine the status of this registration
-        if ($this->regdata->reg_exists()) {
+        if ($this->regdata->reg_exists($this->this_year)) {
             $reg_exists = TRUE;
 
             // Reg exists check payment
-            if ($this->regdata->payment_received()) {
+            if ($this->regdata->payment_received($this->this_year)) {
                 $payment = TRUE;
                 /*
                 $form['payment'] = [
@@ -157,6 +167,19 @@ class RusaPermRegForm extends FormBase {
                 ],
             ]; 
 		}
+		
+		/*
+		 * Dispaly a button to register for next year starting in December
+		 */
+		 
+		 // Get the current month
+		 if (date('m') == 12) {		    
+		    // Check to see if already registered for next year
+		    if (! $this->regdata->reg_exists($this->next_year)) {
+		        // Show a button to register for next uear
+		        
+		    }
+		 }   
 		
 		/*
 		 * Ride registration starts here
@@ -280,12 +303,7 @@ class RusaPermRegForm extends FormBase {
         elseif ($this->step === 'progreg') {
             
             // Check for existing program registration
-            if ($this->regstatus['reg_exists']) {
-                // Registration exists so we are just going to relace the waiver
-                $reg = $this->regdata->get_reg_entity();
-
-            }
-            else {
+            if (! $this->regstatus['reg_exists']) {           
                 // New registration
                                
                 // Create the registration entity                
@@ -425,7 +443,7 @@ class RusaPermRegForm extends FormBase {
      *
      */
     protected function get_pay_link() {
-        $regid = $this->regdata->get_reg_id();
+        $regid = $this->regdata->get_reg_id($this->this_year);
         $url = Url::fromRoute('rusa_perm.pay');
         $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
         $url->setOption('attributes', ['target' => '_blank']);
