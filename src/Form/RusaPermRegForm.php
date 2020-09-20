@@ -179,11 +179,9 @@ class RusaPermRegForm extends FormBase {
 		        // Show a button to register for next uear
 		        $this->step = 'progreg';
              
-                $form['actions'] = [               
-                    'submitnextyer' => [
-                        '#type'  => 'submit',
-                        '#value' => 'Register for the ' . $this->next_year . ' Perm Program',
-                    ],
+                $form['submitnextyer' => [
+                    '#type'  => 'submit',
+                    '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
                 ]; 
 		    }
 		 }   
@@ -197,7 +195,7 @@ class RusaPermRegForm extends FormBase {
             $form['ride'] = [
                 '#type' 	=> 'item',
                 // '#markup'   => $this->t($this->settings['prog']['good_to_go']),
-                '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->year]),
+                '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
             ];
 
             // Show existing perm ride registrations
