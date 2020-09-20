@@ -163,7 +163,7 @@ class RusaPermRegForm extends FormBase {
             $form['actions'] = [               
                 'submit' => [
                     '#type'  => 'submit',
-                    '#value' => 'Register for the  Perm Program',
+                    '#value' => 'Register for the ' . $this->this_year . ' Perm Program',
                 ],
             ]; 
 		}
