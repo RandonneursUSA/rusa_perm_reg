@@ -168,35 +168,38 @@ class RusaPermRegForm extends FormBase {
             ]; 
 		}
 		
-		/*
-		 * Dispaly a button to register for next year starting in December
-		 */
-		 
-		 // Get the current month
-		 if (date('m') > 8) {		    
-		    // Check to see if already registered for next year
-		    if (! $this->regdata->reg_exists($this->next_year)) {
-		        // Show a button to register for next uear
-		        $this->step = 'progreg2';
-             
-                $form['submitnextyer'] = [
-                    '#type'  => 'submit',
-                    '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
-                ]; 
-		    }
-		 }   
 		
-		/*
-		 * Ride registration starts here
-		 */
-        
-        // If all good then ready to ride
+		// If all good then display status message
         if ( $reg_exists && $payment ){
             $form['ride'] = [
                 '#type' 	=> 'item',
                 // '#markup'   => $this->t($this->settings['prog']['good_to_go']),
                 '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
             ];
+		}
+		
+		// Dispaly a button to register for next year starting in December
+				 
+        // Get the current month
+        if (date('m') > 8) {		    
+            // Check to see if already registered for next year
+            if (! $this->regdata->reg_exists($this->next_year)) {
+                // Show a button to register for next uear
+                $this->step = 'progreg2';
+ 
+                $form['submitnextyer'] = [
+                    '#type'  => 'submit',
+                    '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
+                ]; 
+            }
+        }   
+    
+		/*
+		 * Ride registration starts here
+		 */
+        
+        // If all good then ready to ride
+        if ( $reg_exists && $payment ){
 
             // Show existing perm ride registrations
             if ($ridedata = $this->rideregdata->get_registrations() ) {
