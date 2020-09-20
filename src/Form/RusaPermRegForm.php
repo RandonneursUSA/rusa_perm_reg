@@ -119,7 +119,7 @@ class RusaPermRegForm extends FormBase {
         ];
 
         // Set all status to FALSE
-        $good_to_go = $reg_exists = $payment  = FALSE;
+        $reg_exists = $payment  = FALSE;
 
         // Determine the status of this registration
         if ($this->regdata->reg_exists($this->this_year)) {
@@ -128,12 +128,12 @@ class RusaPermRegForm extends FormBase {
             // Reg exists check payment
             if ($this->regdata->payment_received($this->this_year)) {
                 $payment = TRUE;
-                /*
-                $form['payment'] = [
-                   '#type'   => 'item',
-                   '#markup' => $this->t($this->settings['prog']['yes_payment']),
+                // Display status message
+                $form['ride'] = [
+                    '#type' 	=> 'item',
+                    // '#markup'   => $this->t($this->settings['prog']['good_to_go']),
+                    '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
                 ];
-                */
             }
             else {
                 $form['payment'] = [
@@ -167,38 +167,25 @@ class RusaPermRegForm extends FormBase {
                 ],
             ]; 
 		}
-		
-		
-		// If all good then display status message
-        if ( $reg_exists && $payment ){
-            $form['ride'] = [
-                '#type' 	=> 'item',
-                // '#markup'   => $this->t($this->settings['prog']['good_to_go']),
-                '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
-            ];
-		}
-		
-		// Dispaly a button to register for next year starting in December
-				 
-        // Get the current month
+		// Next year starting in December
+		// Get the current month
         if (date('m') > 8) {		    
             // Check to see if already registered for next year
             if (! $this->regdata->reg_exists($this->next_year)) {
                 // Show a button to register for next uear
                 $this->step = 'progreg2';
- 
+
                 $form['submitnextyer'] = [
                     '#type'  => 'submit',
                     '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
                 ]; 
             }
         }   
-    
-		/*
-		 * Ride registration starts here
-		 */
-        
-        // If all good then ready to ride
+
+        /*
+         * Ride registration starts here
+         */
+         
         if ( $reg_exists && $payment ){
 
             // Show existing perm ride registrations
