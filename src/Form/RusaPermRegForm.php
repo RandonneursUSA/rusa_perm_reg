@@ -13,8 +13,8 @@
  * as well as ride registration.
  *
  * @todo
- *   - Pass uid to RusaRegData constructor
- *   - RusaRegData may return and array of registrations for this year and next.
+ *   - Pass uid to RusaRegData constructor - Done
+ *   - RusaRegData may return an array of registrations for this year and next.
  * 
  *
  * ----------------------------------------------------------------------------------------
@@ -173,11 +173,18 @@ class RusaPermRegForm extends FormBase {
 		 */
 		 
 		 // Get the current month
-		 if (date('m') == 12) {		    
+		 if (date('m') > 8) {		    
 		    // Check to see if already registered for next year
 		    if (! $this->regdata->reg_exists($this->next_year)) {
 		        // Show a button to register for next uear
-		        
+		        $this->step = 'progreg';
+             
+                $form['actions'] = [               
+                    'submit' => [
+                        '#type'  => 'submit',
+                        '#value' => 'Register for the  Perm Program',
+                    ],
+                ]; 
 		    }
 		 }   
 		

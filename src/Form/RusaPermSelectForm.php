@@ -46,6 +46,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
     protected $uinfo;
     protected $perms;
     protected $pid; 
+    protected $perm;
     
     /**
      * @getFormID
@@ -118,7 +119,18 @@ class RusaPermSelectForm extends ConfirmFormBase {
         $pid =  \Drupal::request()->query->get('pid');
         if (!empty($pid)) {
             $this->pid  = trim($pid);
-            $this->step = 'confirm';
+            // get the selected perm
+            $perm = $this->get_perm($this->pid);
+            
+            // If perm is not valid
+            if (!$perm) { 
+                $this->step = 'invalid';  
+                return $this->redirect('rusa_perm.select');
+            }
+            else {
+                $this->perm = $perm;
+                $this->step = 'confirm';
+            }
         }
         
         /**
@@ -245,19 +257,17 @@ class RusaPermSelectForm extends ConfirmFormBase {
         
         // Confirmation step
         elseif ($this->step === 'confirm') {
-            $form = parent::buildForm($form, $form_state);
             
-            // Display the selected perm
-            $form['perm'] = $this->get_perm($this->pid);
-                        
+            $form = parent::buildForm($form, $form_state);
+            $form['perm'] = $this->perm;
             $form['remember'] = [
                 '#type'   => 'item',
                 '#markup' => $this->t('Remember the Route #, you’ll need to re-enter it on the waiver.'),
             ];
-            
-            $form['actions']['submit']['#value'] = $this->t('Sign the waiver');            
-        }
         
+            $form['actions']['submit']['#value'] = $this->t('Sign the waiver');            
+           
+        }        
 
         // Set class and attach the Javascript and CSS
         $form['#attributes']['class'][] = 'rusa-form';
@@ -281,7 +291,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
             $this->step = 'search';
             return;
         }
-      
+        
     } // End function verify
 
 
@@ -291,10 +301,10 @@ class RusaPermSelectForm extends ConfirmFormBase {
    * Required
    *
    */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state) {        
         $action = $form_state->getTriggeringElement();
         $values = $form_state->getValues();
-        
+           
         // Don't submit the form until after confirmation
         if ($this->step === 'select') {
             $form_state->setRebuild();
@@ -391,7 +401,21 @@ class RusaPermSelectForm extends ConfirmFormBase {
      protected function get_perm($pid) {        
 		// We have to go back and get it again
 		$permobj = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
-		$perm    = $permobj->getPermanent($pid);
+		
+		// If they bypass the select form route may not be valid
+		if ($permobj->isInactive($pid)) {
+		    // Display error and reload the form
+		    $this->messenger()->addError($this->t('The route you selected is not active.'));
+		    return FALSE;
+		    
+		}
+		if ($permobj->isSr($pid)) {
+		    $this->messenger()->addError($this->t('The route you selected is an SR600.'));
+		    return FALSE;		    
+		}
+		
+		// Perm is good so load it
+		$perm = $permobj->getPermanent($pid);
 		
 		// Get shapes
 		$ptypes = ['LOOP' => 'Loop', 'OB' => 'Out and back', 'PP' => 'Point to point'];

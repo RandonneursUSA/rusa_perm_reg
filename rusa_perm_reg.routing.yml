@@ -67,9 +67,18 @@ rusa_perm.select:
     
 rusa_perm.pay:
   path: '/cgi-bin/perm_pay.pl'
+  requirements:
+    _access: 'TRUE'
+
 
 rusa_perm.search:
   path: '/cgi-bin/permsearch_GF.pl'
+  requirements:
+    _access: 'TRUE'
+
  
 rusa_perm.sr:
-  path: '/pages/super-randonnees'  
+  path: '/pages/super-randonnees'
+  requirements:
+    _access: 'TRUE'
+
