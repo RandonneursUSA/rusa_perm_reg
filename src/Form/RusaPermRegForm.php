@@ -179,7 +179,7 @@ class RusaPermRegForm extends FormBase {
 		        // Show a button to register for next uear
 		        $this->step = 'progreg2';
              
-                $form['submitnextyer' = [
+                $form['submitnextyer'] = [
                     '#type'  => 'submit',
                     '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
                 ]; 
