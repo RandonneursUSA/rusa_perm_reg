@@ -41,7 +41,7 @@ use Drupal\rusa_api\RusaPermanents;
 use Drupal\rusa_api\Client\RusaClient;
 
 /**
- * RusaMemberEditForm
+ * RusaPermRegForm
  *
  * This is the Drupal Form class.
  * All of the form handling is within this class.
@@ -79,14 +79,24 @@ class RusaPermRegForm extends FormBase {
         $this->currentUser = $current_user;
         $this->entityTypeManager = $entityTypeManager;
         $this->uinfo = $this->get_user_info();
-        $this->regdata = new RusaPermReg($this->uinfo['uid']);
+        $this->permReg = new RusaPermReg($this->uinfo['uid']);
         $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
         $this->settings['prog'] = \Drupal::config('rusa_perm_reg.settings')->getRawData();
         $this->settings['ride'] = \Drupal::config('rusa_perm_ride.settings')->getRawData();
 
-        // Store current and next year
-        $this->this_year = date('Y');
-        $this->next_year = date('Y', strtotime('+1 year'));
+        // Store current year
+        $this->this_year = date('Y');      
+        
+        // Get the program registration status
+        $this->regstatus[$this->this_year] = $this->permReg->getRegStatus($this->this_year);
+        
+        // In December start checking next year's registration
+        // Currently set to Oct for testing
+        if (date('m') > 10) {	
+            $this->next_year = date('Y', strtotime('+1 year'));
+            $this->regstatus[$this->next_year] = $this->permReg->getRegStatus($this->next_year);
+        }
+        
     }
 
     /**
@@ -108,142 +118,23 @@ class RusaPermRegForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {  
        
         // Start the form
-        $form[] = [
-            '#title'  => $this->t('Program Registration'),
-        ];
+        $form  = $this->startForm();
+       
+        // Program registration
+        $form += $this->getProgReg();
         
-        // Display member name and # so they know who they are
-        $form['user'] = [
-            '#type'		=> 'item',
-            '#markup' => $this->t($this->uinfo['name'] . ' RUSA #' . $this->uinfo['mid']),
-        ];
-
-        // Set all status to FALSE
-        $reg_exists = $payment  = FALSE;
-
-        // Determine the status of this registration
-        if ($this->regdata->reg_exists($this->this_year)) {
-            $reg_exists = TRUE;
-
-            // Reg exists check payment
-            if ($this->regdata->payment_received($this->this_year)) {
-                $payment = TRUE;
-                // Display status message
-                $form['ride'] = [
-                    '#type' 	=> 'item',
-                    // '#markup'   => $this->t($this->settings['prog']['good_to_go']),
-                    '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
-                ];
-            }
-            else {
-                $form['payment'] = [
-                   '#type'   => 'item',
-                   '#markup' => $this->t($this->settings['prog']['no_payment']),
-                ];
-
-                // Display a link to the payment page
-                $pay_link = $this->get_pay_link();
-
-                $form['paylink'] = [
-                    '#type'     => 'item',
-                    '#markup'   => $pay_link,
-                ];
-            }            
-        }
-        else {
-            // New Program Registration
-            // Just display a submit button to create a new program registration
-            $form['newreg'] = [
-                '#type'   => 'item',
-                '#markup' => $this->t('Before you can ride permanents for RUSA distance credit you must register for the program.'),
-            ];
-
-            $this->step = 'progreg';
-             
-            $form['actions'] = [               
-                'submit' => [
-                    '#type'  => 'submit',
-                    '#value' => 'Register for the ' . $this->this_year . ' Perm Program',
-                ],
-            ]; 
-		}
-		// Next year starting in December
-		// Get the current month
-        if (date('m') > 8) {		    
-            // Check to see if already registered for next year
-            if (! $this->regdata->reg_exists($this->next_year)) {
-            
-                // Check to see if membersip is valid for next year
-                if ($this->uinfo['expdate'] < $this->next_year . '01-01') {
-                    // Display message with link go membership page
-                
-                
-                }
-                else {
-                
-                
-                    // Show a button to register for next uear
-                    $this->step = 'progreg2';
-
-                    $form['submitnextyer'] = [
-                        '#type'  => 'submit',
-                        '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
-                    ]; 
-                }
-            }
-        }   
-
-        /*
-         * Ride registration starts here
-         */
-         
-        if ( $reg_exists && $payment ){
-
-            // Show existing perm ride registrations
-            if ($ridedata = $this->rideregdata->get_registrations() ) {
-                $form['rideregtop'] = [
-                    '#type'   => 'item', 
-                    '#markup' => $this->t('<h3>Your current perm registrations.</h3>')
-                ];
-                
-     			$form['ridereg'] = $this->get_current_registrations($ridedata);       
-            }
- 
- 
-            // Register for perm ride             
-            $form['rideperm'] = [
-                '#type'     => 'item',
-                '#markup'   => $this->t('<h3>Register to ride a permanent.</h3>'),
-                            
-            ]; 
- 
-             $form['rideinstruct'] = [
-                '#type'     => 'item',
-                '#markup'   => $this->t($this->settings['ride']['instructions']),
-            ];
- 
-            $form['pid'] = [
-                '#type'         => 'textfield',
-                '#title'        => $this->t('Route #'),                
-                '#size'         => 6,
-            ];
-
-             $form['actions'] = [
-                'submit' => [
-                    '#type'  => 'submit',
-                    '#value' => 'Find a route and register to ride',
-                ],
-            ];
-            
-            $this->step = 'ridereg';           
-        }
+        // PayPal Payment
+        $form += $this->getPayLink();
         
-        // Save reg status
-        $this->regstatus = [
-            'reg_exists'     => $reg_exists,
-            'payment'        => $payment,
-        ];
-
+        // Good to ride message
+        $form += $this->getStatusMessage();
+        
+        // Next year registration
+        $form += $this->getNextYearReg();
+       
+        // Ride Registration
+        $form += $this->getRideReg();
+	
         // Attach the Javascript and CSS, defined in rusa_api.libraries.yml.
         // $form['#attached']['library'][] = 'rusa_api/rusa_script';
         $form['#attached']['library'][] = 'rusa_api/rusa_style';
@@ -450,7 +341,7 @@ class RusaPermRegForm extends FormBase {
      *
      */
     protected function get_pay_link() {
-        $regid = $this->regdata->get_reg_id($this->this_year);
+        $regid = $this->permReg->get_reg_id($this->this_year);
         $url = Url::fromRoute('rusa_perm.pay');
         $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
         $url->setOption('attributes', ['target' => '_blank']);
@@ -485,5 +376,174 @@ class RusaPermRegForm extends FormBase {
         $url = Url::fromRoute('rusa_perm.sr');
         return Link::fromTextAndUrl('SR-600 page', $url)->toString();
     }
+    
+    /**
+     *
+     * Return the new $form array
+     */
+    protected function startForm() {
+
+        $form[] = [
+            '#title'  => $this->t('Program Registration'),
+        ];
+        
+        // Display member name and # so they know who they are
+        $form['user'] = [
+            '#type'		=> 'item',
+            '#markup' => $this->t($this->uinfo['name'] . ' RUSA #' . $this->uinfo['mid']),
+        ];
+        return $form;
+    }
+    
+    /**
+     *
+     * Returns form elements for new registration
+     */
+    protected function getProgReg() {
+        $form = [];
+        // If no prog registration then show new registration button
+        if (! $this->regstatus[$this->this_year]['reg_exists']) {
+            // New Program Registration
+            // Just display a submit button to create a new program registration
+            $form['newreg'] = [
+                '#type'   => 'item',
+                '#markup' => $this->t('Before you can ride permanents for RUSA distance credit you must register for the program.'),
+            ];
+
+            $this->step = 'progreg';
+             
+            $form['actions'] = [               
+                'submit' => [
+                    '#type'  => 'submit',
+                    '#value' => 'Register for the ' . $this->this_year . ' Perm Program',
+                ],
+            ]; 
+        }
+        return $form;
+    }
+
+    /**
+     *
+     * Returns form elements for payment link
+     */
+    protected function getPayLink() {
+        $form = [];
+        if (! $this->regstatus[$this->this_year]['payment']) {
+            // Display payment link
+            $form['payment'] = [
+                '#type'   => 'item',
+                '#markup' => $this->t($this->settings['prog']['no_payment']),
+            ];
+
+            // Display a link to the payment page
+            $pay_link = $this->get_pay_link();
+
+            $form['paylink'] = [
+                '#type'     => 'item',
+                '#markup'   => $pay_link,
+            ];
+        }          
+        return $form;
+    }
+
+    /**
+     *
+     * Returns form elements for a good to go status message
+     */
+    protected function getStatusMessage() {
+        $form = [];
+        if ($this->regstatus[$this->this_year]['payment']) {                    
+            $form['ride'] = [
+                '#type' 	=> 'item',
+                '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
+            ];
+        }
+        return $form;
+    }
+    
+    /**
+     *
+     * Returns form elements for next year registration
+     */
+    protected function getNextYearReg() {
+        $form = [];
+        if (! empty($this->next_yea)) {
+    
+            $status = $this->regstatus[$this->next_year];
+
+            // Check to see if already registered for next year            
+            if (! $status['reg_exists']) {
+            
+                // Check to see if membersip is valid for next year
+                if ($this->uinfo['expdate'] < $this->next_year . '01-01') {
+                    // Display message with link go membership page                 
+                
+                }
+                else {                
+                    // Show a button to register for next uear
+                    $this->step = 'progreg2';
+
+                    $form['submitnextyer'] = [
+                        '#type'  => 'submit',
+                        '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
+                    ]; 
+                }
+            }
+        }   
+        return $form;
+    }
+
+    /*
+     *
+     * Returns form elements for ride registration
+     */
+    protected function getRideRegistration() {     
+        $form = [];
+        
+        if ( $this->regstatus['reg_exists'] &&  $this->regstatus['payment'] ){
+
+            // Show existing perm ride registrations
+            if ($ridedata = $this->rideregdata->get_registrations() ) {
+                $form['rideregtop'] = [
+                    '#type'   => 'item', 
+                    '#markup' => $this->t('<h3>Your current perm registrations.</h3>')
+                ];
+                
+     			$form['ridereg'] = $this->get_current_registrations($ridedata);       
+            }
+ 
+ 
+            // Register for perm ride             
+            $form['rideperm'] = [
+                '#type'     => 'item',
+                '#markup'   => $this->t('<h3>Register to ride a permanent.</h3>'),
+                            
+            ]; 
+ 
+             $form['rideinstruct'] = [
+                '#type'     => 'item',
+                '#markup'   => $this->t($this->settings['ride']['instructions']),
+            ];
+ 
+            $form['pid'] = [
+                '#type'         => 'textfield',
+                '#title'        => $this->t('Route #'),                
+                '#size'         => 6,
+            ];
+
+             $form['actions'] = [
+                'submit' => [
+                    '#type'  => 'submit',
+                    '#value' => 'Find a route and register to ride',
+                ],
+            ];
+            
+            $this->step = 'ridereg';           
+        }
+        return $form;
+    }
+
+
+
  
 } // End of class  

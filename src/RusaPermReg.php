@@ -72,7 +72,18 @@ class RusaPermReg {
         $year = empty($year) ? date('Y') : $year;
         return ! empty($this->reg[$year]);        
     }
-
+    
+    /**
+     * Get status of this registration
+     *
+     * return array
+     */
+    public function getRegStatus($year) {
+        $status['reg_exists'] = $this->reg_exists($year);
+        $status['payment'] = payment_received($year); 
+        
+        return $status;
+    }
 
 
     /**
@@ -84,68 +95,62 @@ class RusaPermReg {
     }
 
 
-  /**
-   * Get reg id
-   *
-   * Return regid
-   */
-  public function get_reg_id($year){
-      return $this->regid[$year];
-  }
-
-
-  /**
-   * reg_exists
-   *
-   * Return boolean
-   */
-  public function reg_exists($year) {
-      if (! empty($this->reg[$year])) return TRUE;
-  }
-
-  /**
-   * reg dates
-   * 
-   * return the registration dates
-   */
-  public function get_reg_dates($year) {
-      if (! empty($this->reg[$year])) {
-        $reg_dates = $this->reg[$year]->get('field_registration_year')->getValue();
-        return [$reg_dates[0]['value'], $reg_dates[0]['end_value']];
-      }
-  }  
+    /**
+    * Get reg id
+    *
+    * Return regid
+    */
+    public function get_reg_id($year){
+        return $this->regid[$year];
+    }
 
  
-  /**
-   * payment received
-   *
-   * return boolean
-   */
-  public function payment_received($year) {
-      if(! empty($this->reg[$year])) {
-        // Check to see if payment has been received
-        $payment_flag = $this->reg[$year]->get('field_payment_received')->getValue();
-        return $payment_flag[0]['value'] == 1 ? TRUE : FALSE;
-      }
-  }
-
-
-
- 
-    
+    /**
+    * reg dates
+    * 
+    * return the registration dates
+    */
+    public function get_reg_dates($year) {
+        if (! empty($this->reg[$year])) {
+            $reg_dates = $this->reg[$year]->get('field_registration_year')->getValue();
+            return [$reg_dates[0]['value'], $reg_dates[0]['end_value']];
+        }
+    }  
 
 
     /*
      * Return the SmartWaiver URL from settings
      *
      */
-    public static function getSwUrl() {
+    public function getSwUrl() {
         return \Drupal::config('rusa_perm_ride.settings')->get('swurl');
     }
  
  
- 
- 
- 
- 
+    // Private functions
+    
+    /**
+    * reg_exists
+    *
+    * Return boolean
+    */
+    private function reg_exists($year) {
+        return ! empty($this->reg[$year]);
+    }
+
+    /**
+    * payment received
+    *
+    * return boolean
+    */
+    private function payment_received($year) {
+        if(! empty($this->reg[$year])) {
+            // Check to see if payment has been received
+            $payment_flag = $this->reg[$year]->get('field_payment_received')->getValue();
+            return $payment_flag[0]['value'] == 1 ? TRUE : FALSE;
+        }
+        return FALSE;
+    }
+
+  
  } //EoC
