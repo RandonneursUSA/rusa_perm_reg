@@ -47,6 +47,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
     protected $perms;
     protected $pid; 
     protected $perm;
+    protected $progreg;
     
     /**
      * @getFormID
@@ -65,13 +66,15 @@ class RusaPermSelectForm extends ConfirmFormBase {
      */
     public function __construct(AccountProxy $current_user) {
     
+        $this->uinfo = $this->get_user_info($current_user);
+        $this->progreg = new RusaPermReg($this->uinfo['uid']);
+        
         // Don't continue unless user has valid program registration
-        if (! RusaPermReg::progRegIsValid($current_user->id() )) {
+        if (! $this->progreg->progRegIsValid()) {
             $this->messenger()->addWarning($this->t("You are not registered for the perm program."));
             return $this->redirect('rusa.home');                                
         }
-    
-        $this->uinfo = $this->get_user_info($current_user);
+        
         $this->step = 'search';
     } 
 
@@ -383,7 +386,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
      */
     protected function smartwaiver_url($pid) { 
         // Get URL from settings
-        $swurl = RusaPermReg::getSwUrl();        
+        $swurl  = $this->progreg->getSwUrl();        
         $swurl .= '?wautofill_firstname='   . $this->uinfo['fname'];
         $swurl .= '&wautofill_lastname='    . $this->uinfo['lname'];
         $swurl .= '&wautofill_dobyyyymmdd=' . $this->uinfo['dob'];

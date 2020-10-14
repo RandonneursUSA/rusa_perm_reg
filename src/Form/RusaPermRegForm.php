@@ -172,13 +172,24 @@ class RusaPermRegForm extends FormBase {
         if (date('m') > 8) {		    
             // Check to see if already registered for next year
             if (! $this->regdata->reg_exists($this->next_year)) {
-                // Show a button to register for next uear
-                $this->step = 'progreg2';
+            
+                // Check to see if membersip is valid for next year
+                if ($this->uinfo['expdate'] < $this->next_year . '01-01') {
+                    // Display message with link go membership page
+                
+                
+                }
+                else {
+                
+                
+                    // Show a button to register for next uear
+                    $this->step = 'progreg2';
 
-                $form['submitnextyer'] = [
-                    '#type'  => 'submit',
-                    '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
-                ]; 
+                    $form['submitnextyer'] = [
+                        '#type'  => 'submit',
+                        '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
+                    ]; 
+                }
             }
         }   
 
