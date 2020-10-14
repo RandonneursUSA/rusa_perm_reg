@@ -80,7 +80,7 @@ class RusaPermReg {
      */
     public function getRegStatus($year) {
         $status['reg_exists'] = $this->reg_exists($year);
-        $status['payment'] = payment_received($year); 
+        $status['payment'] = $this->payment_received($year); 
         
         return $status;
     }
