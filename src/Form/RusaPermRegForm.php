@@ -13,8 +13,8 @@
  * as well as ride registration.
  *
  * @todo
- *   - Pass uid to RusaRegData constructor - Done
- *   - RusaRegData may return an array of registrations for this year and next.
+ *   - Pass uid to RusaPermReg constructor - Done
+ *   - RusaPermReg may return an array of registrations for this year and next.
  * 
  *
  * ----------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\rusa_perm_reg\RusaRegData;
+use Drupal\rusa_perm_reg\RusaPermReg;
 use Drupal\rusa_perm_reg\RusaRideRegData;
 use Drupal\rusa_api\RusaPermanents;
 use Drupal\rusa_api\Client\RusaClient;
@@ -79,7 +79,7 @@ class RusaPermRegForm extends FormBase {
         $this->currentUser = $current_user;
         $this->entityTypeManager = $entityTypeManager;
         $this->uinfo = $this->get_user_info();
-        $this->regdata = new RusaRegData($this->uinfo['uid']);
+        $this->regdata = new RusaPermReg($this->uinfo['uid']);
         $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
         $this->settings['prog'] = \Drupal::config('rusa_perm_reg.settings')->getRawData();
         $this->settings['ride'] = \Drupal::config('rusa_perm_ride.settings')->getRawData();
