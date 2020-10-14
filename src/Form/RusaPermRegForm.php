@@ -502,7 +502,7 @@ class RusaPermRegForm extends FormBase {
         
         // Ride regitration only if program registration is complete
         $status = $this->regstatus[$this->this_year];
-        if ( $status['reg_exists'] && $tstatus['payment'] ){
+        if ( $status['reg_exists'] && $status['payment'] ){
 
             // Show existing perm ride registrations
             if ($ridedata = $this->rideregdata->get_registrations() ) {
