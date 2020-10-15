@@ -134,7 +134,7 @@ class RusaPermReg {
     *
     * Return boolean
     */
-    private function reg_exists($year) {
+    protected function reg_exists($year) {
         return ! empty($this->reg[$year]);
     }
 
@@ -143,7 +143,7 @@ class RusaPermReg {
     *
     * return boolean
     */
-    private function payment_received($year) {
+    protected function payment_received($year) {
         if(! empty($this->reg[$year])) {
             // Check to see if payment has been received
             $payment_flag = $this->reg[$year]->get('field_payment_received')->getValue();

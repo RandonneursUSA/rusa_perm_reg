@@ -477,7 +477,10 @@ class RusaPermRegForm extends FormBase {
                 // Check to see if membersip is valid for next year
                 if ($this->uinfo['expdate'] < $this->next_year . '01-01') {
                     // Display message with link go membership page                 
-                
+                    $form['memexp'] = [
+                        '#type' 	=> 'item',
+                        '#markup' => $this->t('You RUSA membersip expires before %year. Please renew your membership before registering for the perm program.' ['%year' => $this->this_year]),
+                    ];
                 }
                 else {                
                     // Show a button to register for next uear
@@ -488,6 +491,22 @@ class RusaPermRegForm extends FormBase {
                         '#value' => 'Register for the ' . $this->next_year . ' Perm Program',                    
                     ]; 
                 }
+            }
+            elseif ($status['reg_exists'] && ! $status['payment'] ) {
+                // Payment link for next year
+                $form['payment'] = [
+                    '#type'   => 'item',
+                    '#markup' => $this->t($this->settings['prog']['no_payment']),
+                ];
+
+                // Display a link to the payment page
+                $pay_link = $this->get_pay_link();
+
+                $form['paylink'] = [
+                    '#type'     => 'item',
+                    '#markup'   => $pay_link,
+                ];            
+            
             }
         }   
         return $form;
