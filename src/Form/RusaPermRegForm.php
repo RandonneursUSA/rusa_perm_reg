@@ -479,7 +479,7 @@ class RusaPermRegForm extends FormBase {
                     // Display message with link go membership page                 
                     $form['memexp'] = [
                         '#type' 	=> 'item',
-                        '#markup' => $this->t('You RUSA membersip expires before %year. Please renew your membership before registering for the perm program.' ['%year' => $this->this_year]),
+                        '#markup' => $this->t('You RUSA membersip expires before %year. Please renew your membership before registering for the perm program.', ['%year' => $this->this_year]),
                     ];
                 }
                 else {                
