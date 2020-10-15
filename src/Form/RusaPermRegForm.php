@@ -236,12 +236,13 @@ class RusaPermRegForm extends FormBase {
         $user_id   = $this->currentUser->id(); 
         $user      = User::load($user_id);
 
-        $uinfo['uid']   = $user_id;
-        $uinfo['name']  = $user->get('field_display_name')->getValue()[0]['value'];
-        $uinfo['fname'] = $user->get('field_first_name')->getValue()[0]['value'];
-        $uinfo['lname'] = $user->get('field_last_name')->getValue()[0]['value'];
-        $uinfo['dob']   = str_replace('-', '', $user->get('field_date_of_birth')->getValue()[0]['value']);
-        $uinfo['mid']   = $user->get('field_rusa_member_id')->getValue()[0]['value'];
+        $uinfo['uid']     = $user_id;
+        $uinfo['name']    = $user->get('field_display_name')->getValue()[0]['value'];
+        $uinfo['fname']   = $user->get('field_first_name')->getValue()[0]['value'];
+        $uinfo['lname']   = $user->get('field_last_name')->getValue()[0]['value'];
+        $uinfo['dob']     = str_replace('-', '', $user->get('field_date_of_birth')->getValue()[0]['value']);
+        $uinfo['mid']     = $user->get('field_rusa_member_id')->getValue()[0]['value'];
+        $uinfo['expdate'] = $user->get('field_member_expiration_date')->getValue()[0]['value'];
         return($uinfo);
     }
 
@@ -475,11 +476,11 @@ class RusaPermRegForm extends FormBase {
             if (! $status['reg_exists']) {
             
                 // Check to see if membersip is valid for next year
-                if ($this->uinfo['expdate'] < $this->next_year . '01-01') {
+                if ($this->uinfo['expdate'] < $this->next_year . '-01-01') {
                     // Display message with link go membership page                 
                     $form['memexp'] = [
                         '#type' 	=> 'item',
-                        '#markup' => $this->t('You RUSA membersip expires before %year. Please renew your membership before registering for the perm program.', ['%year' => $this->this_year]),
+                        '#markup' => $this->t('You RUSA membersip expires before %year. Please renew your membership before registering for the perm program.', ['%year' => $this->next_year]),
                     ];
                 }
                 else {                
