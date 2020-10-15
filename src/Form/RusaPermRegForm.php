@@ -467,7 +467,7 @@ class RusaPermRegForm extends FormBase {
      */
     protected function getNextYearReg() {
         $form = [];
-        if (! empty($this->next_yea)) {
+        if (! empty($this->next_year)) {
     
             $status = $this->regstatus[$this->next_year];
 
