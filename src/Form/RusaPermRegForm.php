@@ -120,19 +120,17 @@ class RusaPermRegForm extends FormBase {
         // Start the form
         $form  = $this->startForm();
         
-        // December only message
-        $form += $this->decemberMessage();
-      
         // Good to ride message
         $form += $this->getStatusMessage();
+        
+        // December only message
+        $form += $this->decemberMessage();             
           
         // Program registration
         $form += $this->getProgReg();
         
         // PayPal Payment
-        $form += $this->getPayLink();
-        
-        
+        $form += $this->getPayLink();               
        
         // Ride Registration
         $form += $this->getRideReg();
@@ -486,7 +484,7 @@ class RusaPermRegForm extends FormBase {
             $form['decmessage'] = [
                 '#type'   => 'item',
                 '#markup' => $this->t('Starting in December you can register for the %next_year perm program. ' . 
-                                      'Once you have registered for the %nect_year perm program ' .
+                                      'Once you have registered for the %next_year perm program ' .
                                       'you can register for rides in December without having to also register ' .
                                       'for the %this_year program', 
                                       ['%next_year' => $this->next_year, '%this_year' => $this->this_year]),
@@ -554,46 +552,55 @@ class RusaPermRegForm extends FormBase {
         $form = [];
         
         // Ride regitration only if program registration is complete
-        $status = $this->regstatus[$this->this_year];
-        if ( $status['reg_exists'] && $status['payment'] ){
-
-            // Show existing perm ride registrations
-            if ($ridedata = $this->rideregdata->get_registrations() ) {
-                $form['rideregtop'] = [
-                    '#type'   => 'item', 
-                    '#markup' => $this->t('<h3>Your current perm registrations.</h3>')
-                ];
-                
-     			$form['ridereg'] = $this->get_current_registrations($ridedata);       
-            }
+        // If it's December then next year's registration is good enough
+        // So we only care if there is ANY valid registration
+        
+        // Note: At this point we don't know the data of the ride they want to do,
+        // So we cannot trap if they don't have a program registration for next year yet.
+        // We will have to do that after the fact.
+        foreach($this->regstatus as $year => $status) {        
+        
+            if ( $status['reg_exists'] && $status['payment'] ){
+               
+                // Show existing perm ride registrations
+                if ($ridedata = $this->rideregdata->get_registrations() ) {
+                    $form['rideregtop'] = [
+                        '#type'   => 'item', 
+                        '#markup' => $this->t('<h3>Your current perm registrations.</h3>')
+                    ];                
+     			    $form['ridereg'] = $this->get_current_registrations($ridedata);       
+                }
  
- 
-            // Register for perm ride             
-            $form['rideperm'] = [
-                '#type'     => 'item',
-                '#markup'   => $this->t('<h3>Register to ride a permanent.</h3>'),
+                // We only want to do this once
+                if (! $did_ride_reg) {
+                    // Register for perm ride             
+                    $form['rideperm'] = [
+                        '#type'     => 'item',
+                        '#markup'   => $this->t('<h3>Register to ride a permanent.</h3>'),
                             
-            ]; 
+                    ]; 
  
-             $form['rideinstruct'] = [
-                '#type'     => 'item',
-                '#markup'   => $this->t($this->settings['ride']['instructions']),
-            ];
+                     $form['rideinstruct'] = [
+                        '#type'     => 'item',
+                        '#markup'   => $this->t($this->settings['ride']['instructions']),
+                    ];
  
-            $form['pid'] = [
-                '#type'         => 'textfield',
-                '#title'        => $this->t('Route #'),                
-                '#size'         => 6,
-            ];
+                    $form['pid'] = [
+                        '#type'         => 'textfield',
+                        '#title'        => $this->t('Route #'),                
+                        '#size'         => 6,
+                    ];
 
-             $form['actions'] = [
-                'submit' => [
-                    '#type'  => 'submit',
-                    '#value' => 'Find a route and register to ride',
-                ],
-            ];
+                     $form['actions'] = [
+                        'submit' => [
+                            '#type'  => 'submit',
+                            '#value' => 'Find a route and register to ride',
+                        ],
+                    ];
             
-            $this->step = 'ridereg';           
+                    $this->step = 'ridereg';
+                }
+            }
         }
         return $form;
     }
