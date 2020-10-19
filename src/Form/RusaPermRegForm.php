@@ -119,18 +119,20 @@ class RusaPermRegForm extends FormBase {
        
         // Start the form
         $form  = $this->startForm();
-       
+        
+        // December only message
+        $form += $this->decemberMessage();
+      
+        // Good to ride message
+        $form += $this->getStatusMessage();
+          
         // Program registration
         $form += $this->getProgReg();
         
         // PayPal Payment
         $form += $this->getPayLink();
         
-        // Good to ride message
-        $form += $this->getStatusMessage();
         
-        // Next year registration
-        $form += $this->getNextYearReg();
        
         // Ride Registration
         $form += $this->getRideReg();
@@ -341,10 +343,13 @@ class RusaPermRegForm extends FormBase {
      * Build a link to the payment page
      *
      */
-    protected function get_pay_link() {
+    protected function get_pay_link($year) {
         $regid = $this->permReg->get_reg_id($this->this_year);
         $url = Url::fromRoute('rusa_perm.pay');
-        $url->setOption('query',  ['mid' => $this->uinfo['mid'], 'regid' => $regid]);
+        $url->setOption('query',  ['mid'   => $this->uinfo['mid'], 
+                                   'regid' => $regid,
+                                   'year'  => $year]);
+                                   
         $url->setOption('attributes', ['target' => '_blank']);
         return Link::fromTextAndUrl('Proceed to the payment page', $url)->toString();
     }
@@ -402,8 +407,12 @@ class RusaPermRegForm extends FormBase {
      */
     protected function getProgReg() {
         $form = [];
-        // If no prog registration then show new registration button
-        if (! $this->regstatus[$this->this_year]['reg_exists']) {
+        
+        // If it's December then we no longer care about this year
+        $year = empty($this->next_year) ? $this->this_year : $this->next_year;
+        
+        // If no prog registration then show new registration button        
+        if (! $this->regstatus[$year]['reg_exists']) {
             // New Program Registration
             // Just display a submit button to create a new program registration
             $form['newreg'] = [
@@ -416,7 +425,7 @@ class RusaPermRegForm extends FormBase {
             $form['actions'] = [               
                 'submit' => [
                     '#type'  => 'submit',
-                    '#value' => 'Register for the ' . $this->this_year . ' Perm Program',
+                    '#value' => 'Register for the ' . $year . ' Perm Program',
                 ],
             ]; 
         }
@@ -429,22 +438,25 @@ class RusaPermRegForm extends FormBase {
      */
     protected function getPayLink() {
         $form = [];
-        if (! $this->regstatus[$this->this_year]['payment']) {
-            // Display payment link
-            $form['payment'] = [
-                '#type'   => 'item',
-                '#markup' => $this->t($this->settings['prog']['no_payment']),
-            ];
+        
+        foreach ($this->regstatus as $year => $reg) {
+            if (! $reg['payment']) {                    
+                // Display payment link
+                $form['payment'] = [
+                    '#type'   => 'item',
+                    '#markup' => $this->t($this->settings['prog']['no_payment']),
+                ];
 
-            // Display a link to the payment page
-            $pay_link = $this->get_pay_link();
+                // Display a link to the payment page
+                $pay_link = $this->get_pay_link($year);
 
-            $form['paylink'] = [
-                '#type'     => 'item',
-                '#markup'   => $pay_link,
-            ];
-        }          
-        return $form;
+                $form['paylink'] = [
+                    '#type'     => 'item',
+                    '#markup'   => $pay_link,
+                ];
+            }          
+            return $form;
+        }
     }
 
     /**
@@ -453,11 +465,32 @@ class RusaPermRegForm extends FormBase {
      */
     protected function getStatusMessage() {
         $form = [];
-        if ($this->regstatus[$this->this_year]['payment']) {                    
-            $form['ride'] = [
-                '#type' 	=> 'item',
-                '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $this->this_year]),
-            ];
+        foreach ($this->regstatus as $year => $reg) {
+            if ($reg['payment']) {                    
+                $form['regstatus' . $year] = [
+                    '#type' 	=> 'item',
+                    '#markup' => $this->t('You are registered to ride permanents for %year', ['%year' => $year]),
+                ];
+            }
+        }
+        return $form;
+    }
+    
+    /**
+     *
+     * Returns form elements for the December message
+     */
+    protected function decemberMessage() {
+        $form = [];
+        if (! empty($this->next_year)) {        
+            $form['decmessage'] = [
+                '#type'   => 'item',
+                '#markup' => $this->t('Starting in December you can register for the %next_year perm program. ' . 
+                                      'Once you have registered for the %nect_year perm program ' .
+                                      'you can register for rides in December without having to also register ' .
+                                      'for the %this_year program', 
+                                      ['%next_year' => $this->next_year, '%this_year' => $this->this_year]),
+            ];    
         }
         return $form;
     }
