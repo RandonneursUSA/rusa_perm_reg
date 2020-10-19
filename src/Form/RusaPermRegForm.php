@@ -420,7 +420,7 @@ class RusaPermRegForm extends FormBase {
 
             $this->step = 'progreg';
              
-            $form['actions']['submitprog'] = [
+            $form['submitprog'] = [
                 '#type'  => 'submit',
                 '#value' => 'Register for the ' . $year . ' Perm Program',
             ];        
@@ -543,8 +543,8 @@ class RusaPermRegForm extends FormBase {
                 '#size'         => 6,
             ];
 
-             $form['actions']['submitride'] = [
-                '#type'  => 'button',
+             $form['submitride'] = [
+                '#type'  => 'submit',
                 '#value' => 'Find a route and register to ride',
             ];
         
