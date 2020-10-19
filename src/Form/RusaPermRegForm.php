@@ -416,7 +416,7 @@ class RusaPermRegForm extends FormBase {
           /*  $form['newreg'] = [
                 '#type'   => 'item',
                 '#markup' => $this->t('Before you can ride permanents for RUSA distance credit you must register for the program.'),
-            */ ];
+             ]; */
 
             $this->step = 'progreg';
              
