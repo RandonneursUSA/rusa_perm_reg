@@ -215,7 +215,7 @@ class RusaPermRegForm extends FormBase {
             if (! $this->regstatus[$year]['reg_exists']) {
                     
                 // New registration
-                $reg =  $this->permReg->newProgReg($this->uinfo['uid'], $this->uinfo['mid']);
+                $reg =  $this->permReg->newProgReg($this->uinfo['uid'], $this->uinfo['mid'], $year);
                 
                 // Could add a test to the returned $reg object
 

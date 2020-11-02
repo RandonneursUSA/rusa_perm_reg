@@ -76,11 +76,12 @@ class RusaPermReg {
      *
      * @param $uid = user id
      * @param $mid = RUSA #
+     * @param $yeaar = Year to create registration for
      *
      * @returns the registration entity
      *
      */
-    public function newProgReg($uid, $mid) {
+    public function newProgReg($uid, $mid, $year) {
         // Create the registration entity                
         $reg = $this->storage->create(
             [
@@ -88,8 +89,8 @@ class RusaPermReg {
                 'status'      => 1,
                 'field_rusa_' => $mid,
                 'field_registration_year' => [
-                    'value'     => date("Y-m-d"),
-                    'end_value' => date("Y") . '-12-31',
+                    'value'     => $year . '-01-01',
+                    'end_value' => $year . '-12-31',
                 ],                        
             ]);               
         $reg->save();
