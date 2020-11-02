@@ -437,7 +437,7 @@ class RusaPermRegForm extends FormBase {
         $form = [];
         
         foreach ($this->regstatus as $year => $reg) {
-            if (! $reg['payment']) {                    
+            if ($reg['reg_exists'] && ! $reg['payment']) {                    
                 // Display payment link
                 $form['payment'] = [
                     '#type'   => 'item',
