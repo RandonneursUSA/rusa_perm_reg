@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Smartwaiver\Smartwaiver;
 use Smartwaiver\Exceptions\SmartwaiverHTTPException;
+use Drupal\rusa_perm_reg\RusaPermReg;
 
 /**
  * Rusa Perm Controller
@@ -24,6 +25,7 @@ class RusaPermController  extends ControllerBase {
     protected $entityTypeManager;
     protected $smartwaiverClient;
     protected $keyRepository;
+    protected $permReg;
      
      
   /**
@@ -38,6 +40,8 @@ class RusaPermController  extends ControllerBase {
       $this->request           = $request;
       $this->entityTypeManager = $entityTypeManager;
       $this->keyRepository     = $key_repository;
+      
+      $this->permReg = new RusaPermReg($currentUser->id());
       
       $api_key = \Drupal::config('rusa_perm_ride.settings')->get('api_key');      
       $this->smartwaiverClient = new Smartwaiver($this->apiKey('rusa'));
@@ -171,19 +175,24 @@ class RusaPermController  extends ControllerBase {
             }
 
 
-            // Convert the date
-            // $date = strtotime($cfields['Date you want to ride']);
-            // $date = date("Y-m-d", $date);
+            // Check if valid program registration for date of ride            
+            $year   = date("Y", $date);
+            $status = $this->permReg->getRegStatus($year);
+            if ($status['reg_exists'] && $status['payment']) {            
 
-            // Save the registration
-            $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
-                [
-                    'field_date_of_ride'    => $date,
-                    'field_perm_number'     => $pid,
-                    'field_waiver_id'       => $wid, 
-                    'field_rusa_member_id'  => $mid,
-                ]);
-            $reg->save();
+                // Save the registration
+                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
+                    [
+                        'field_date_of_ride'    => $date,
+                        'field_perm_number'     => $pid,
+                        'field_waiver_id'       => $wid, 
+                        'field_rusa_member_id'  => $mid,
+                    ]);
+                $reg->save();
+            }
+            else {
+                $this->messenger()->addWarning($this->t('You are not registered to ride perms in %year', ['%year' => $year]));
+                return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
         }
         
 		// Return to user profile Permanents tab

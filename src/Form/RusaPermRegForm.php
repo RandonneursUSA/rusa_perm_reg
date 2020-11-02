@@ -25,7 +25,6 @@ namespace Drupal\rusa_perm_reg\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
@@ -49,18 +48,15 @@ use Drupal\rusa_api\Client\RusaClient;
  */
 class RusaPermRegForm extends FormBase {
 
-    protected $settings;
-    protected $ride_settings;
-    protected $currentUser;
-    protected $entityTypeManager;
-    protected $uinfo;
-    protected $regdata;
-    protected $rideregdata;
-    protected $regstatus;
-    protected $step = 'start';
-    protected $pid;
-    protected $this_year;
-    protected $next_year;
+    protected $settings;          // Array from config form
+    protected $uinfo;             // Array of user data
+    protected $permReg;           // RusaPermReg object 
+    protected $rideregdata;       // RusaRideRegData object
+    protected $regstatus;         // Array of registration status keyed by year
+    protected $step = 'start';    // Text
+    protected $pid;               // Perm ID
+    protected $this_year;         // Year
+    protected $next_year;         // Year
 
     /**
      * @getFormID
@@ -75,12 +71,19 @@ class RusaPermRegForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function __construct(AccountProxy $current_user, EntityTypeManagerInterface $entityTypeManager) {
-        $this->currentUser = $current_user;
-        $this->entityTypeManager = $entityTypeManager;
-        $this->uinfo = $this->get_user_info();
-        $this->permReg = new RusaPermReg($this->uinfo['uid']);
+    public function __construct(AccountProxy $current_user) {
+  
+        // Store some account data 
+        $this->uinfo = $this->get_user_info($current_user->id());
+        
+        // Create a permReg object and inititate a query
+        $this->permReg = new RusaPermReg();
+        $this->permReg->query($this->uinfo['uid']);
+  
+        // Create a rideReg object and initiate a query
         $this->rideregdata = new RusaRideRegData($this->uinfo['uid']);
+        
+        // Read the settings from the config entities        
         $this->settings['prog'] = \Drupal::config('rusa_perm_reg.settings')->getRawData();
         $this->settings['ride'] = \Drupal::config('rusa_perm_ride.settings')->getRawData();
 
@@ -105,7 +108,6 @@ class RusaPermRegForm extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
             $container->get('current_user'),
-            $container->get('entity_type.manager'),
         );
     }
 
@@ -149,7 +151,7 @@ class RusaPermRegForm extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {       
-            
+        // Validate ride registration    
         if ($this->step === 'ridereg') {          
             // Check route validity
             $pid = trim($form_state->getValue('pid'));
@@ -199,29 +201,26 @@ class RusaPermRegForm extends FormBase {
             }
         }
         elseif ($this->step === 'progreg') {
-            
-            // Check for existing program registration
-            if (! $this->regstatus['reg_exists']) {           
+            // If it's December then we no longer care about this year
+            $year = empty($this->next_year) ? $this->this_year : $this->next_year;
+        
+            // Check for existing program registration       
+            if (! $this->regstatus[$year]['reg_exists']) {
+                    
                 // New registration
-                               
-                // Create the registration entity                
-                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_registration')->create(
-                    [
-                        'uid'		  => $this->uinfo['uid'],
-                        'status'      => 1,
-                        'field_rusa_' => $this->uinfo['mid'],
-                        'field_registration_year' => [
-                            'value'     => date("Y-m-d"),
-                            'end_value' => date("Y") . '-12-31',
-                        ],                        
-                    ]);               
-                $reg->save();
+                $reg =  $this->permReg->newProgReg($this->uinfo['uid'], $this->uinfo['mid']);
+                
+                // Could add a test to the returned $reg object
 
                 $this->messenger()->addStatus($this->t('Your perm program registration has been saved.', []));
                 $this->logger('rusa_perm_reg')->notice('New perm program registration.', []);
 
                 $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
             }
+            else {
+                $this->messenger()->addStatus($this->t('Program registration aleady exists for %year.', ['%year' => $year]));
+            }
+            
         }
         
     }
@@ -232,9 +231,8 @@ class RusaPermRegForm extends FormBase {
      * Get user info
      *
      */
-    protected function get_user_info() {
-        $user_id   = $this->currentUser->id(); 
-        $user      = User::load($user_id);
+    protected function get_user_info($user_id) {
+        $user = User::load($user_id);
 
         $uinfo['uid']     = $user_id;
         $uinfo['name']    = $user->get('field_display_name')->getValue()[0]['value'];
@@ -412,11 +410,7 @@ class RusaPermRegForm extends FormBase {
         // If no prog registration then show new registration button        
         if (! $this->regstatus[$year]['reg_exists']) {
             // New Program Registration
-            // Just display a submit button to create a new program registration
-          /*  $form['newreg'] = [
-                '#type'   => 'item',
-                '#markup' => $this->t('Before you can ride permanents for RUSA distance credit you must register for the program.'),
-             ]; */
+            // Just display a submit button to create a new program registration          
 
             $this->step = 'progreg';
              

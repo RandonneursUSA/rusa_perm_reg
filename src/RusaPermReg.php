@@ -34,18 +34,27 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  */
 class RusaPermReg {
 
+    protected $storage;
     protected $reg;
     protected $regid;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct($uid) {
-       
+    public function __construct() {       
 
-        // Get registration data
-		$storage = \Drupal::service('entity_type.manager')->getStorage('rusa_perm_registration');
-		$query = $storage->getQuery()
+        // Get the entity query storage
+		$this->storage = \Drupal::service('entity_type.manager')->getStorage('rusa_perm_registration');	
+	}
+	
+	/**
+	 * Query for program registration
+	 *
+	 * @param $uid = user ID
+	 *
+	 */
+	 public function query($uid) {
+		$query = $this->storage->getQuery()
             ->condition('status', 1)
             ->condition('uid', $uid);
   
@@ -62,6 +71,30 @@ class RusaPermReg {
         }
     }
 
+    /**
+     * Create a new program registration
+     *
+     * @param $uid = user id
+     * @param $mid = RUSA #
+     *
+     * @returns the registration entity
+     *
+     */
+    public function newProgReg($uid, $mid) {
+        // Create the registration entity                
+        $reg = $this->storage->create(
+            [
+                'uid'		  => $uid,
+                'status'      => 1,
+                'field_rusa_' => $mid,
+                'field_registration_year' => [
+                    'value'     => date("Y-m-d"),
+                    'end_value' => date("Y") . '-12-31',
+                ],                        
+            ]);               
+        $reg->save();
+        return $reg;
+    }
 
     /*
      * Check to see if user has a valid Program registration for given year
