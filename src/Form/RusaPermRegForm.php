@@ -150,9 +150,13 @@ class RusaPermRegForm extends FormBase {
      * Required
      *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {       
+    public function validateForm(array &$form, FormStateInterface $form_state) {   
+    
+        // Triggering element will be either 'submitride' or 'submitprog'
+        $action = $form_state->getTriggeringElement()['#parents'][0];
+    
         // Validate ride registration    
-        if ($this->step === 'ridereg') {          
+        if ($this->step === 'ridereg' && $action === 'submitride') {          
             // Check route validity
             $pid = trim($form_state->getValue('pid'));
             if (!empty($pid)) {       
@@ -190,8 +194,11 @@ class RusaPermRegForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
     
+        // Triggering element will be either 'submitride' or 'submitprog'
+        $action = $form_state->getTriggeringElement()['#parents'][0];
+        
         // For ridereg we redirect to select form
-        if ($this->step === 'ridereg') {
+        if ($action === 'submitride') {
             $pid = $form_state->getValue('pid');
             if (empty($pid)) {            
                 $form_state->setRedirect('rusa_perm.select');
@@ -200,7 +207,7 @@ class RusaPermRegForm extends FormBase {
                 $form_state->setRedirect('rusa_perm.select', ['pid' => $pid]);
             }
         }
-        elseif ($this->step === 'progreg') {
+        elseif ($action === 'submitprog') {
             // If it's December then we no longer care about this year
             $year = empty($this->next_year) ? $this->this_year : $this->next_year;
         
