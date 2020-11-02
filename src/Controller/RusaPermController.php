@@ -41,8 +41,9 @@ class RusaPermController  extends ControllerBase {
       $this->entityTypeManager = $entityTypeManager;
       $this->keyRepository     = $key_repository;
       
-      $this->permReg = new RusaPermReg($currentUser->id());
-      
+      $this->permReg = new RusaPermReg();
+      $this->permReg->query($currentUser->id());
+
       $api_key = \Drupal::config('rusa_perm_ride.settings')->get('api_key');      
       $this->smartwaiverClient = new Smartwaiver($this->apiKey('rusa'));
   } 
@@ -147,7 +148,7 @@ class RusaPermController  extends ControllerBase {
         else {
             $this->getLogger('rusa_perm_reg')->notice('Waiver retrieved after %count attempts.', ['%count' => $attempts]);
         
-          // Now we have the waiver
+            // Now we have the waiver
             $tags      = $waiver->tags[0];
             $fields    = $waiver->participants[0]->getArrayInput();
             $pfields   = $fields['customParticipantFields'];
@@ -193,6 +194,7 @@ class RusaPermController  extends ControllerBase {
             else {
                 $this->messenger()->addWarning($this->t('You are not registered to ride perms in %year', ['%year' => $year]));
                 return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
+            }
         }
         
 		// Return to user profile Permanents tab
