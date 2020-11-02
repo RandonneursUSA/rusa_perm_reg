@@ -62,7 +62,7 @@ class RusaPermReg {
 
         // Store registrations keyed by year
         foreach ($query_result as $id) {
-            $reg = $storage->load($id);
+            $reg = $this->storage->load($id);
             $regid = $id;
             $reg_dates = $reg->get('field_registration_year')->getValue();
             $year = date('Y', strtotime($reg_dates[0]['value']));
