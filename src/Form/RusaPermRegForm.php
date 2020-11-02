@@ -441,7 +441,7 @@ class RusaPermRegForm extends FormBase {
                 // Display payment link
                 $form['payment'] = [
                     '#type'   => 'item',
-                    '#markup' => $this->t($this->settings['prog']['no_payment']),
+                    '#markup' => $this->t('You must now submit payment for the %year perm program.', ['%year' => $year]),
                 ];
 
                 // Display a link to the payment page
@@ -451,9 +451,9 @@ class RusaPermRegForm extends FormBase {
                     '#type'     => 'item',
                     '#markup'   => $pay_link,
                 ];
-            }          
-            return $form;
+            }                    
         }
+        return $form;
     }
 
     /**
