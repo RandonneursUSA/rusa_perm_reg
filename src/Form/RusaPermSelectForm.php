@@ -67,7 +67,8 @@ class RusaPermSelectForm extends ConfirmFormBase {
     public function __construct(AccountProxy $current_user) {
     
         $this->uinfo = $this->get_user_info($current_user);
-        $this->progreg = new RusaPermReg($this->uinfo['uid']);
+        $this->progreg = new RusaPermReg();
+        $this->progreg->query($this->uinfo['uid']);
         
         // Don't continue unless user has valid program registration
         if (! $this->progreg->progRegIsValid()) {
