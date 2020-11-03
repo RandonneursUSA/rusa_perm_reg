@@ -98,13 +98,18 @@ class RusaPermReg {
     }
 
     /*
-     * Check to see if user has a valid Program registration for given year
+     * Check to see if user has a valid Program registration
+     * for any year.
      *
      */
-    public function progRegIsValid($year = NULL) {
-        // Default to current year
-        $year = empty($year) ? date('Y') : $year;
-        return ! empty($this->reg[$year]);        
+    public function progRegIsValid() {
+        $valid = FALSE;
+        foreach ($this->reg as $year => $reg) {
+            if ( $this->payment_received($year)) {
+                $valid = TRUE;
+            }
+        }
+        return $valid;
     }
     
     /**

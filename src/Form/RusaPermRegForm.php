@@ -482,7 +482,7 @@ class RusaPermRegForm extends FormBase {
         if (! empty($this->next_year)) {        
             $form['decmessage'] = [
                 '#type'   => 'item',
-                '#markup' => $this->t('Registration for the %next_year permanents program is now open.  If you register now, your registration will include permanent program registration for December %this_year.',                
+                '#markup' => $this->t('Registration for the %next_year permanents program is now open.  If you register now, your registration will include permanents program registration for December %this_year.',                
                                       ['%next_year' => $this->next_year, '%this_year' => $this->this_year]),
             ];    
         }
