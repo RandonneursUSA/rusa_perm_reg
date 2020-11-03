@@ -114,7 +114,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
         // Don't continue unless user has valid program registration
         if (! $this->progreg->progRegIsValid()) {
             $this->messenger()->addWarning($this->t("You are not registered for the perm program."));
-            return $this->redirect('rusa.home');                              
+            return $this->redirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);                             
         }
         
         $this->step = 'search';
