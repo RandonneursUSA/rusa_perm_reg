@@ -45,7 +45,7 @@ class RusaPermController  extends ControllerBase {
       $this->permReg->query($currentUser->id());
 
       $api_key = \Drupal::config('rusa_perm_ride.settings')->get('api_key');      
-      $this->smartwaiverClient = new Smartwaiver($this->apiKey('rusa'));
+      $this->smartwaiverClient = new Smartwaiver($this->apiKey($api_key));
   } 
 
 	/**
@@ -177,8 +177,9 @@ class RusaPermController  extends ControllerBase {
 
 
             // Check if valid program registration for date of ride            
-            $year   = date("Y", $date);
+            $year   = date("Y", strtotime($date));
             $status = $this->permReg->getRegStatus($year);
+            
             if ($status['reg_exists'] && $status['payment']) {            
 
                 // Save the registration
