@@ -95,7 +95,7 @@ class RusaPermRegForm extends FormBase {
         
         // In December start checking next year's registration
         // Currently set to Oct for testing
-        if (date('m') > 9) {	
+        if (date('m') > 11) {	
             $this->next_year = date('Y', strtotime('+1 year'));
             $this->regstatus[$this->next_year] = $this->permReg->getRegStatus($this->next_year);
         }
