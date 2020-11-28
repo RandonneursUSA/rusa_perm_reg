@@ -68,7 +68,8 @@ class RusaPermSelectForm extends ConfirmFormBase {
     
         $this->uinfo = $this->get_user_info($current_user);
         $this->progreg = new RusaPermReg();
-        $this->progreg->query($this->uinfo['uid']);                
+        $this->progreg->query($this->uinfo['uid']);
+        $this->step = 'search';
     } 
 
 
@@ -115,9 +116,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
         if (! $this->progreg->progRegIsValid()) {
             $this->messenger()->addWarning($this->t("You are not registered for the perm program."));
             return $this->redirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);                             
-        }
-        
-        $this->step = 'search';
+        } 
     
         // PID can be passed as a query parameter
         $pid =  \Drupal::request()->query->get('pid');
