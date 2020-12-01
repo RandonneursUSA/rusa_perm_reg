@@ -347,7 +347,7 @@ class RusaPermRegForm extends FormBase {
      *
      */
     protected function get_pay_link($year) {
-        $regid = $this->permReg->get_reg_id($this->this_year);
+        $regid = $this->permReg->get_reg_id($year);
         $url = Url::fromRoute('rusa_perm.pay');
         $url->setOption('query',  ['mid'   => $this->uinfo['mid'], 
                                    'regid' => $regid,
