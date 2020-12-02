@@ -176,11 +176,24 @@ class RusaPermController  extends ControllerBase {
             }
 
 
-            // Check if valid program registration for date of ride            
+            // Check if valid program registration for date of ride       
+            $good_to_save = FALSE; 
             $year   = date("Y", strtotime($date));
-            $status = $this->permReg->getRegStatus($year);
-            
+            $status = $this->permReg->getRegStatus($year);            
             if ($status['reg_exists'] && $status['payment']) {            
+                $good_to_save = TRUE;            
+            }
+            
+            // In December next year's registration is also valid
+            elseif (date('m') > 11) {	
+                $year += 1 ;
+                $status = $this->permReg->getRegStatus($year);  
+                if ($status['reg_exists'] && $status['payment']) {            
+                    $good_to_save = TRUE;            
+                }
+            }
+                       
+            if ($good_to_save) {            
 
                 // Save the registration
                 $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
