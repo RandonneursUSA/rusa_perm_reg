@@ -186,8 +186,8 @@ class RusaPermController  extends ControllerBase {
             
             // In December next year's registration is also valid
             elseif (date('m') > 11) {	
-                $year += 1 ;
-                $status = $this->permReg->getRegStatus($year);  
+                $next_year = $year + 1 ;
+                $status = $this->permReg->getRegStatus($next_year);  
                 if ($status['reg_exists'] && $status['payment']) {            
                     $good_to_save = TRUE;            
                 }
