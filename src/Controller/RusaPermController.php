@@ -6,6 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\user\Entity\User;
 use Drupal\key\KeyRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -193,6 +194,15 @@ class RusaPermController  extends ControllerBase {
                 }
             }
                        
+            // Check to see if membership expires before ride date
+            $user = User::load($this->currentUser->id() );
+            $expdate = $user->get('field_member_expiration_date')->getValue()[0]['value'];
+            
+            if ($date > $expdate) { 
+                $this->messenger()->addWarning($this->t('Your RUSA membership will expire before this ride date.'));
+                return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); "Your RUSA membership expires before the date of this ride."                
+            }            
+            
             if ($good_to_save) {            
 
                 // Save the registration

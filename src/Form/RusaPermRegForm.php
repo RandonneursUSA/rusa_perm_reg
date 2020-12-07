@@ -13,9 +13,6 @@
  * as well as ride registration.
  *
  * @todo
- *   - Pass uid to RusaPermReg constructor - Done
- *   - RusaPermReg may return an array of registrations for this year and next.
- * 
  *
  * ----------------------------------------------------------------------------------------
  * 
