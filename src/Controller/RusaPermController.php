@@ -199,7 +199,9 @@ class RusaPermController  extends ControllerBase {
             $expdate = $user->get('field_member_expiration_date')->getValue()[0]['value'];
             
             if ($date > $expdate) { 
-                $this->messenger()->addWarning($this->t('Your RUSA membership will expire before this ride date.'));
+                $this->messenger()->addWarning(
+                    $this->t('Your RUSA membership will expire on %expdate. You must renew your membership before you can ride on %date.', 
+                        ['%expdate' => $expdate, '%date' => $date]));
                 return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);               
             }            
             
