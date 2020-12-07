@@ -200,7 +200,7 @@ class RusaPermController  extends ControllerBase {
             
             if ($date > $expdate) { 
                 $this->messenger()->addWarning($this->t('Your RUSA membership will expire before this ride date.'));
-                return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]); "Your RUSA membership expires before the date of this ride."                
+                return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);               
             }            
             
             if ($good_to_save) {            
