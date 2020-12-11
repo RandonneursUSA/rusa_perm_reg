@@ -424,7 +424,7 @@ class RusaPermRegForm extends FormBase {
                     '#type'     => 'item',
                     '#markup'   => 
                         $this->t('Your RUSA membership expires on %expdate. You must renew your membership before you can register for the %year Perm Program',
-                            ['%expdate' => $this->uinfo['expdate'], '%date' => $date]),
+                            ['%expdate' => $this->uinfo['expdate'], '%year' => $year]),
                     ];
             }
             else {             
