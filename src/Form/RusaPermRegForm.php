@@ -13,6 +13,7 @@
  * as well as ride registration.
  *
  * @todo
+ *    Add validation for membership on prog reg submit
  *
  * ----------------------------------------------------------------------------------------
  * 
@@ -414,14 +415,27 @@ class RusaPermRegForm extends FormBase {
         // If no prog registration then show new registration button        
         if (! $this->regstatus[$year]['reg_exists']) {
             // New Program Registration
-            // Just display a submit button to create a new program registration          
-
-            $this->step = 'progreg';
+            
+            // Check to see if membership is valid for this year
+            $expyear = date("Y", strtotime($this->uinfo['expdate']));
+            if ($year > $expyear) {
+                // Membership not valid for registration year
+                $form['memberexp'] = [
+                    '#type'     => 'item',
+                    '#markup'   => 
+                        $this->t('Your RUSA membership expires on %expdate. You must renew your membership before you can register for the %year Perm Program',
+                            ['%expdate' => $this->uinfo['expdate'], '%date' => $date]),
+                    ];
+            }
+            else {             
+                // Display a submit button to create a new program registration          
+                $this->step = 'progreg';
              
-            $form['submitprog'] = [
-                '#type'  => 'submit',
-                '#value' => 'Register for the ' . $year . ' Perm Program',
-            ];        
+                $form['submitprog'] = [
+                    '#type'  => 'submit',
+                    '#value' => 'Register for the ' . $year . ' Perm Program',
+                ];        
+            }
         }
         return $form;
     }
