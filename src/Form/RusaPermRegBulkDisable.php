@@ -99,7 +99,7 @@ class RusaPermRegBulkDisable extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
    
-        $year = $form_state->getValue('year')
+        $year = $form_state->getValue('year');
 	
 		$query = $this->storage->getQuery()
             ->condition('status', 1)
