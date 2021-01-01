@@ -65,6 +65,7 @@ class RusaPermRegBulkDisable extends FormBase {
         
         $form['year'] = [
             '#type'     => 'select',
+            '#title'    => $this->t('Select year'),
             '#options'  => [$last_year, $this_year],
         ];
         
@@ -106,7 +107,8 @@ class RusaPermRegBulkDisable extends FormBase {
             ->condition('field_registration_year', $year);
   
         $query_result = $query->execute();
-
+        dpm($query_result);
+        /*
         $count = 0;
         foreach ($query_result as $id) {
             $reg = $this->storage->load($id);
@@ -114,6 +116,9 @@ class RusaPermRegBulkDisable extends FormBase {
             $reg->save();
             $count++;
         }
+        */
+        $this->messenger()->addStatus($this->t('%count Program Registrations have been disabled for %year',
+                ['%count' => $count, '%year' => $year]));
         
     }
 }
