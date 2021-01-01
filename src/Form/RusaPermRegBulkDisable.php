@@ -70,7 +70,7 @@ class RusaPermRegBulkDisable extends FormBase {
         
         $form['submit'] = [
             '#type'     => 'submit',
-            '#value'    => $this-t('Bulk disable registrations'),
+            '#value'    => $this->t('Bulk disable registrations'),
         ];
         
         // Attach the Javascript and CSS, defined in rusa_api.libraries.yml.
