@@ -66,7 +66,7 @@ class RusaPermRegBulkDisable extends FormBase {
         $form['year'] = [
             '#type'     => 'select',
             '#title'    => $this->t('Select year'),
-            '#options'  => [$last_year, $this_year],
+            '#options'  => [$last_year => $last_year, $this_year => $this_year],
         ];
         
         $form['submit'] = [
