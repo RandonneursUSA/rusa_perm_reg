@@ -78,7 +78,7 @@ class RusaPermRegBulkDisable extends FormBase {
         $form['#attached']['library'][] = 'rusa_api/rusa_style';
         
         return $form;
-    };
+    }
     
      /**
      * @validateForm
