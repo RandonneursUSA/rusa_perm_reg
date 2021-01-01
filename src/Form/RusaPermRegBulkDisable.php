@@ -22,6 +22,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\Query;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 
 class RusaPermRegBulkDisable extends FormBase {
@@ -101,10 +103,15 @@ class RusaPermRegBulkDisable extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
    
         $year = $form_state->getValue('year');
+        
+        // Get a date string suitable for use with entity query.
+        $date = DrupalDateTime::createFromArray( array('year' => $year, 'month' => 12, 'day' => 31) )
+        $date->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE)); 
+        $date = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
 	
 		$query = $this->storage->getQuery()
             ->condition('status', 1)
-            ->condition('field_registration_year', $year);
+            ->condition('field_registration_year', $date, '<=');
   
         $query_result = $query->execute();
         dpm($query_result);
