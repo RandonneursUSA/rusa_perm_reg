@@ -105,7 +105,7 @@ class RusaPermRegBulkDisable extends FormBase {
         $year = $form_state->getValue('year');
         
         // Get a date string suitable for use with entity query.
-        $date = DrupalDateTime::createFromArray( array('year' => $year, 'month' => 12, 'day' => 31) )
+        $date = DrupalDateTime::createFromArray( array('year' => $year, 'month' => 12, 'day' => 31) );
         $date->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE)); 
         $date = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
 	
