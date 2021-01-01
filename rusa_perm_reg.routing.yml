@@ -64,6 +64,14 @@ rusa_perm.select:
     _form: '\Drupal\rusa_perm_reg\Form\RusaPermSelectForm'
   requirements:
     _permission: 'create rusa perm registration'        
+
+rusa_perm.bulk_disable:
+  path: '/rusa/perm/bulk-disable'
+  defaults:
+    _title: 'Bulk disable program registrations'
+    _form: '\Drupal\rusa_perm_reg\Form\RusaPermRegBulkDisable'
+  requirements:
+    _permission: 'delete rusa perm registration' 
     
 rusa_perm.pay:
   path: '/cgi-bin/perm_pay.pl'
