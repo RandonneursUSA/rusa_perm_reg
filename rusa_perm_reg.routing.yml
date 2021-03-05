@@ -84,6 +84,11 @@ rusa_perm.search:
   requirements:
     _access: 'TRUE'
 
+rusa_perm.result_search:
+  path: '/cgi-bin/resultsearch_PF.pl'
+  requirements:
+    _access: 'TRUE'
+
  
 rusa_perm.sr:
   path: '/pages/super-randonnees'

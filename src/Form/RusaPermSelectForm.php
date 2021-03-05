@@ -10,6 +10,8 @@
  * Provide a form for selecting permanents
  * Part of a Perm registration system
  *
+ * @Modified
+ *   3/4/2021 - PL Added last reviewed and previous results fields.
  * ----------------------------------------------------------------------------------------
  * 
  */
@@ -219,6 +221,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
                         $perm->climbing,
                         $perm->name,
                         $perm->statelist,
+                        $perm->datereviewed,
                         $perm->description,
                     ];
                 
@@ -240,7 +243,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
             
                 $form['select'] = [
                     '#type'     => 'table',
-                    '#header'   => ['Route #', 'Location', 'Km', 'Climb (ft.)', 'Name', 'States', 'Description'],
+                    '#header'   => ['Route #', 'Location', 'Km', 'Climb (ft.)', 'Name', 'States','Last reviewed', 'Description'],
                     '#rows'     => $rows,
                     '#responsive' => TRUE,
                     '#attributes' => ['class' => ['rusa-table']],
@@ -437,7 +440,17 @@ class RusaPermSelectForm extends ConfirmFormBase {
             $url->setOption('attributes',  ['target' => '_blank']);
             $rwgps = Link::fromTextAndUrl($perm->url, $url)->toString();
 		}
-		
+	
+        // Build link to results search
+        // $uri = "https://dev.rusa.org/cgi-bin/resultsearch_PF.pl";
+        $url = URL::fromRoute("rusa_perm.result_search");;
+        $url->setOption('query',  [ 'permid'   => $pid,
+                                    'permdate' => '',
+                                    'collapse' => '1']);
+
+        $url->setOption('attributes',  ['target' => '_blank']);
+        $reslink = Link::fromTextAndUrl("View previous results", $url)->toString();
+
 		$rows = [
             ['Route #', ['data' => "$pid   <-- Copy this so you can paste it in the waiver.", 'class' => ['rusa-em']]],
             ['Route name',      $perm->name],
@@ -447,8 +460,10 @@ class RusaPermSelectForm extends ConfirmFormBase {
             ['Location',        $loc],
             ['Dates available', $perm->dates],
             ['States covered',  $perm->statelist],
+            ['Last reviewed',   $perm->datereviewed],
             ['Description',     $perm->description],
             ['Ride With GPS',   $rwgps], 
+            ['Results',         $reslink],
         ];
 		
 		return [
