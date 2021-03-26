@@ -258,11 +258,16 @@ class ResultSubmit extends FormBase {
                 'accept'            => 1,
                 'drupal'            => 1,
                 'rider1-dnf'        => $form_state->getValue('radio') === 'dnf' ? 'true' : 'false',
+                'drupal-regid'		=> $this->reg->id,
             ];
+            
+            // Log that we are submitting this result
+            $this->getLogger('rusa_perm_reg')->notice("Results submitted for Ride Reg ID %regid for RUSA # %mid",
+                    ['%mid' => $this->uinfo['mid'], '%regid' => $this->reg->id()]);
                         
             // Post results to the perm backend             
             $resobj = new RusaPermResults($results);
-            $response = $resobj->post();
+            $response = $resobj->post();      
             
             if (isset($response->rsid)) {            
                 // Check that results have not already been submitted
@@ -274,6 +279,10 @@ class ResultSubmit extends FormBase {
                 else {
                     $this->save_reg_data($response->rsid);
                     $this->messenger()->addStatus($this->t('Your results have been saved', []));
+                    
+                    // Log after submitting this result
+        			$this->getLogger('rusa_perm_reg')->notice("Registration entity @reg updated with result id @res ",
+        					['@reg' => $this->reg->id(), '@res' => $response->rsid]);                    
                 }
             }
             elseif (isset($response->errors)) {
@@ -281,7 +290,10 @@ class ResultSubmit extends FormBase {
                 foreach ($response->errors as $error) {
                     $message .= '<br />' . $error;
                 }                
-                $this->messenger()->addError($this->t("Result submit returned the following errors: $message", []));
+                $this->messenger()->addError($this->t("Result submit returned the following errors: %message", 
+                		['%message' => $message] ));
+                $this->getLogger('rusa_perm_reg')->error("Result submit returned the following errors: %message",
+                        ['%message' => $message]);
             }
 
             // Send the user back to main perm page
@@ -298,7 +310,7 @@ class ResultSubmit extends FormBase {
         // Set the result status id to the rsid that was passed to us
         $this->reg->set('field_rsid', $rsid);
         $this->reg->set('status', 0);
-        $this->reg->save();
+        $this->reg->save();                
     }
 
 
