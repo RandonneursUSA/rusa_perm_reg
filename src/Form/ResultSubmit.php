@@ -273,7 +273,7 @@ class ResultSubmit extends FormBase {
                 // Check that results have not already been submitted
                 // This should never happen but ...
                 if (! $this->reg->get('field_rsid')->isEmpty()) {
-                    $this->messenger()->addError($this->t('It appeard results have alreay been submitted for this ride. Please check your results.'));
+                    $this->messenger()->addError($this->t('It appears results have alreay been submitted for this ride. Please check your results.'));
                     $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
                 }
                 else {
