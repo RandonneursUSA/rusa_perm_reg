@@ -89,7 +89,7 @@ class ResultSubmit extends FormBase {
         // Check that results have not already been submitted
         // This should never happen but ...
         if (! $this->reg->get('field_rsid')->isEmpty()) {
-            $this->messenger()->addError($this->t('It appeard results have alreay been submitted for this ride. Please check your results.'));
+            $this->messenger()->addError($this->t('It appears results have already been submitted for this ride. Please check your results.'));
             $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
         }
         
@@ -192,10 +192,16 @@ class ResultSubmit extends FormBase {
     public function validateForm(array &$form, FormStateInterface $form_state) {
         $action = $form_state->getTriggeringElement();
         if ($action['#value'] == "Cancel") {
-            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
+            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);           
         }
 
         elseif ($form_state->getValue('radio') == 'fin') {
+        	// Make sure the form wqas not submitted from another window
+			if (! $this->reg->get('field_rsid')->isEmpty()) {
+				$form_state->setErrorByName('hours', $this->t('It appears results have already been submitted for this ride. Please check your results.'));
+				 $this->getLogger('rusa_perm_reg')->warning("Results already submitted for registration ID %regid.", ['%regid' => $this->reg->id()]);
+			}
+        
             // If radio = completed and time is empty
             if ($form_state->getValue('hours') < 2) {
                 $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
@@ -269,22 +275,14 @@ class ResultSubmit extends FormBase {
             $resobj = new RusaPermResults($results);
             $response = $resobj->post();      
             
-            if (isset($response->rsid)) {            
-                // Check that results have not already been submitted
-                // This should never happen but ...
-                if (! $this->reg->get('field_rsid')->isEmpty()) {
-                    $this->messenger()->addError($this->t('It appears results have already been submitted for this ride. Please check your results.'));
-                    $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);
-                }
-                else {
-                    $this->save_reg_data($response->rsid);
-                    $this->messenger()->addStatus($this->t('Your results have been saved', []));
-                    
-                    // Log after submitting this result
-        			$this->getLogger('rusa_perm_reg')->notice("Registration entity @reg updated with result id @res ",
-        					['@reg' => $this->reg->id(), '@res' => $response->rsid]);                    
-                }
-            }
+            if (isset($response->rsid)) {                           
+				$this->save_reg_data($response->rsid);
+				$this->messenger()->addStatus($this->t('Your results have been saved', []));
+				
+				// Log after submitting this result
+				$this->getLogger('rusa_perm_reg')->notice("Registration entity @reg updated with result id @res ",
+						['@reg' => $this->reg->id(), '@res' => $response->rsid]);                    
+			}            
             elseif (isset($response->errors)) {
                 // Display error messages
                 foreach ($response->errors as $error) {
