@@ -190,6 +190,7 @@ class ResultSubmit extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+   
         $action = $form_state->getTriggeringElement();
         if ($action['#value'] == "Cancel") {
             $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);           
@@ -231,10 +232,22 @@ class ResultSubmit extends FormBase {
     } // End function validate
 
 
-    /**
-     * @submitForm
-     *
-     * Required
+	/**
+	 * @submitForm
+	 *
+	 * Required
+	 *
+	 * @To-do
+	 *
+ 	 * registration date & time = $this->reg->get('created')->value)
+ 	 *
+	 * result submission date & time - NOW
+	 * ride time from result submission
+	 *
+	 * results submit time MUST be greater than or equal than reg time plus ride duration.
+	 *
+	 * ride-time = $form_state->getValue('hours')+ $form_state->getValue('minutes')
+	 *
      *
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
@@ -281,7 +294,22 @@ class ResultSubmit extends FormBase {
 				
 				// Log after submitting this result
 				$this->getLogger('rusa_perm_reg')->notice("Registration entity @reg updated with result id @res ",
-						['@reg' => $this->reg->id(), '@res' => $response->rsid]);                    
+						['@reg' => $this->reg->id(), '@res' => $response->rsid]);  
+						
+				// Give warning if not enough time elpased between ride registration and result submit
+				$regdate = $this->reg->get('created')->value; // Timestamp of ride registration
+				$now = time();                                // Timestamp of result submission
+				$diff = $now - $regdate;                      // Seconds between the two
+
+				$hours = $form_state->getValue('hours') * 60 * 60;
+				$minutes =  $form_state->getValue('minutes') * 60;
+				$duration = $hours + $minutes;		          // Seconds of ride duration
+				
+				if ($duration > $diff) {        
+    				$this->messenger()->addWarning($this->t('WARNING - ride registrations and waivers must be completed BEFORE the ride, not after'));
+					$this->getLogger('rusa_perm_reg')->notice("Results submitted too soon for @reg",['@reg' => $this->reg->id()]);
+				}			
+						                  
 			}            
             elseif (isset($response->errors)) {
                 // Display error messages
