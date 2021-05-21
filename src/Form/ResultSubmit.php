@@ -40,6 +40,7 @@ use Drupal\rusa_api\RusaPermResults;
  */
 class ResultSubmit extends FormBase {
 
+    protected $settings;
     protected $currentUser;
     protected $rideRegStorage;
     protected $uinfo;
@@ -63,6 +64,7 @@ class ResultSubmit extends FormBase {
         $this->currentUser = $current_user;
         $this->rideRegStorage = $rideRegStorage;
         $this->uinfo = $this->get_user_info();
+        $this->settings = \Drupal::config('rusa_perm_ride.settings')->getRawData();
     }
 
     /**
@@ -305,8 +307,9 @@ class ResultSubmit extends FormBase {
 				$minutes =  $form_state->getValue('minutes') * 60;
 				$duration = $hours + $minutes;		          // Seconds of ride duration
 				
-				if ($duration > $diff) {        
-    				$this->messenger()->addWarning($this->t('WARNING - ride registrations and waivers must be completed BEFORE the ride, not after'));
+				if ($duration > $diff) {    
+				    $message = $settings['too_soon'];
+    				$this->messenger()->addWarning($message);
 					$this->getLogger('rusa_perm_reg')->notice("Results submitted too soon for @reg",['@reg' => $this->reg->id()]);
 				}			
 						                  

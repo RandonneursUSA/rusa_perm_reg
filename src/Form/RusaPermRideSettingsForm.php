@@ -119,8 +119,15 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
             '#default_value'  => $config->get('sr'),                         
         ];
 
-
-
+        $form['messages']['too_soon'] = [
+            '#type'           => 'textarea',
+            '#title'          => 'Results submitted too soon',
+            '#description'    => $this->t('Enter the error text they see if they submit results too soon.'),
+            '#rows'           => 4,
+            '#cols'           => 40,
+            '#resizable'      => 'both',
+            '#default_value'  => $config->get('too_soon'),          
+        ];
 
         $form['actions'] = [
             '#type' => 'actions',
@@ -149,6 +156,7 @@ class RusaPermRideSettingsForm extends ConfigFormBase {
                 ->set('search',       $values['search'])
                 ->set('route',        $values['route'])
                 ->set('sr',           $values['sr'])
+                ->set('too_soon',     $values['too_soon'])
                 ->save();
 
         parent::submitForm($form, $form_state);
