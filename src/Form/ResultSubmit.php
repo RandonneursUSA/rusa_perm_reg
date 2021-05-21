@@ -308,7 +308,7 @@ class ResultSubmit extends FormBase {
 				$duration = $hours + $minutes;		          // Seconds of ride duration
 				
 				if ($duration > $diff) {    
-				    $message = $settings['too_soon'];
+				    $message = $this->settings['too_soon'];
     				$this->messenger()->addWarning($message);
 					$this->getLogger('rusa_perm_reg')->notice("Results submitted too soon for @reg",['@reg' => $this->reg->id()]);
 				}			
