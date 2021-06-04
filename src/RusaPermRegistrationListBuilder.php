@@ -106,7 +106,14 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\rusa_perm_reg\RusaPermRegRideInterface */
-    $row['id'] = $entity->link();
+    
+    /*
+    Call to deprecated method link() of class Drupal\Core\Entity\EntityInterface. 
+    Deprecated in drupal:8.0.0 and is removed from drupal:9.0.0. 
+    Use Drupal\Core\EntityInterface::toLink()->toString() instead.
+    */
+    
+    $row['id'] = $entity->toLink()->toString();
     $row['status'] = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');
     $row['uid']['data'] = [
       '#theme' => 'username',
