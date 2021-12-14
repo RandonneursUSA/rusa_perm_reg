@@ -92,7 +92,6 @@ class RusaPermRegForm extends FormBase {
         $this->regstatus[$this->this_year] = $this->permReg->getRegStatus($this->this_year);
         
         // In December start checking next year's registration
-        // Currently set to Oct for testing
         if (date('m') > 11) {	
             $this->next_year = date('Y', strtotime('+1 year'));
             $this->regstatus[$this->next_year] = $this->permReg->getRegStatus($this->next_year);
@@ -517,6 +516,16 @@ class RusaPermRegForm extends FormBase {
         // So we cannot trap if they don't have a program registration for next year yet.
         // We will have to do that after the fact.
         
+        // Show existing perm ride registrations
+		if ($ridedata = $this->rideregdata->get_registrations() ) {
+			$form['rideregtop'] = [
+				'#type'   => 'item', 
+				'#markup' => $this->t('<h3>Your current perm registrations.</h3>')
+			];                
+			$form['ridereg'] = $this->get_current_registrations($ridedata);       
+		}
+
+
         $do_rde_reg = FALSE;
         foreach($this->regstatus as $year => $status) {                
             if ( $status['reg_exists'] && $status['payment'] ){
@@ -524,16 +533,7 @@ class RusaPermRegForm extends FormBase {
             }
         }
         
-        if ($do_ride_reg) {
-            // Show existing perm ride registrations
-            if ($ridedata = $this->rideregdata->get_registrations() ) {
-                $form['rideregtop'] = [
-                    '#type'   => 'item', 
-                    '#markup' => $this->t('<h3>Your current perm registrations.</h3>')
-                ];                
-                $form['ridereg'] = $this->get_current_registrations($ridedata);       
-            }
-
+        if ($do_ride_reg) {       
             // Register for perm ride             
             $form['rideperm'] = [
                 '#type'     => 'item',
