@@ -106,7 +106,7 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\rusa_perm_reg\RusaPermRegRideInterface */
-    $row['id'] = $entity->link();
+    $row['id'] = $entity->toLink();
     $row['status'] = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');
     $row['uid']['data'] = [
       '#theme' => 'username',
