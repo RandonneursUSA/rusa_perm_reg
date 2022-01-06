@@ -222,7 +222,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
                         $perm->name,
                         $perm->statelist,
                         $perm->datereviewed,
-                        $perm->description,
+                        $this->t($perm->description),
                     ];
                 
                     $links['select'] = [
@@ -461,7 +461,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
             ['Dates available', $perm->dates],
             ['States covered',  $perm->statelist],
             ['Last reviewed',   $perm->datereviewed],
-            ['Description',     $perm->description],
+            ['Description',     $this->t($perm->description)],
             ['Ride With GPS',   $rwgps], 
             ['Results',         $reslink],
         ];
