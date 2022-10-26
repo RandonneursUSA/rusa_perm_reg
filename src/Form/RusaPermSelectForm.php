@@ -164,7 +164,8 @@ class RusaPermSelectForm extends ConfirmFormBase {
                     '100' => '100-199 km', 
                     '200' => '200-299 km', 
                     '300' => '300-399 km', 
-                    '400' => '400-499 km'],
+                    '400' => '400-599 km',
+                    '600' => '600+ km'],
             ];
 
             $form['type'] = [
