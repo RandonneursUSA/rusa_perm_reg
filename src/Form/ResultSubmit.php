@@ -366,7 +366,14 @@ class ResultSubmit extends FormBase {
      * Return time in minutes
      */
     protected function calculate_time($dist) {
-        return floor(60 * ($dist / 15.0));    
+       /* permanent minimum speed depends on its distance */
+       if     ($dist <  700) { $kmph = 15.0; }
+       elseif ($dist < 1300) { $kmph = 13.3; }
+       elseif ($dist < 1900) { $kmph = 12.0; }
+       elseif ($dist < 2500) { $kmph = 10.0; }
+       else                  { $kmph = 200.0/24.0; } /* 200km per day */
+
+       return floor(60 * ($dist / $kmph));
     }
 
     /**
