@@ -147,12 +147,13 @@ class RusaPermSelectForm extends ConfirmFormBase {
             // Get the states from the database
             $stateobj = new RusaStates();
             $states   = $stateobj->getStates(3);
+	    array_unshift($states, "All States");
             
             $form['state'] = [
                 '#type'     => 'select',
                 '#title'    => $this->t('Starting location'),
                 '#options'  => $states,
-                '#required' => TRUE,
+                '#required' => FALSE,
             ];
 
             // Distance select
