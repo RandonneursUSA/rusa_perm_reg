@@ -103,8 +103,12 @@ class ResultSubmit extends FormBase {
         $pobj = new RusaPermanents(['key' => 'pid', 'val' => $pid]);
         $perm = $pobj->getPermanent($pid);
         
-        // Save the time calculation
-        $this->time = $this->calculate_time($perm->dist);
+	// Save the time calculation
+        $dist_unpaved = 0;
+        if ($perm->dist_unpaved > 0){
+            $dist_unpaved = $perm->dist_unpaved;
+        }
+        $this->time = $this->calculate_time($perm->dist, $dist_unpaved);
 
 
         // Get the perm info we want to show in a table
@@ -365,7 +369,7 @@ class ResultSubmit extends FormBase {
      *
      * Return time in minutes
      */
-    protected function calculate_time($dist) {
+    protected function calculate_time($dist, $dist_unpaved) {
        /* permanent minimum speed depends on its distance */
        if     ($dist <  700) { $kmph = 15.0; }
        elseif ($dist < 1300) { $kmph = 13.3; }
@@ -373,7 +377,8 @@ class ResultSubmit extends FormBase {
        elseif ($dist < 2500) { $kmph = 10.0; }
        else                  { $kmph = 200.0/24.0; } /* 200km per day */
 
-       return floor(60 * ($dist / $kmph));
+       //One extra minute per unpaved km
+       return (floor(60 * ($dist / $kmph)) + $dist_unpaved);
     }
 
     /**
