@@ -139,9 +139,15 @@ class ResultSubmit extends FormBase {
         $form['pid']   = ['#type' => 'hidden', '#value' => $pid];
         $form['date']  = ['#type' => 'hidden', '#value' => $ride_date];
         
-        
-        // Display some radio buttons
-        
+        if($perm->type == 'PP'){
+            $form['p2preverse'] = [
+                '#type'  => 'checkbox',
+                '#title' => 'Point to point route ridden in reverse',
+            ];
+        }
+
+
+        // Display some radio buttons        
         $form['radio'] = [
             '#type'     => 'radios',
             '#options'  => [
