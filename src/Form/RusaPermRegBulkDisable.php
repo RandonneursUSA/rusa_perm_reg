@@ -111,8 +111,8 @@ class RusaPermRegBulkDisable extends FormBase {
 	
 		$query = $this->storage->getQuery()
             ->condition('status', 1)
-            ->condition('field_registration_year', $date, '<=');
-  
+            ->condition('field_registration_year', $date, '<=')
+  			->accessCheck(TRUE);
         $query_result = $query->execute();
        
        

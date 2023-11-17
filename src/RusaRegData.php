@@ -47,8 +47,8 @@ class RusaRegData {
 		$storage = \Drupal::service('entity_type.manager')->getStorage('rusa_perm_registration');
 		$query = $storage->getQuery()
             ->condition('status', 1)
-            ->condition('uid', $uid);
-  
+            ->condition('uid', $uid)
+            ->accessCheck(TRUE); 
         $query_result = $query->execute();
 
         // Store registrations keyed by year

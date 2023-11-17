@@ -36,8 +36,8 @@ class RusaRideRegData {
 		$query = $storage->getQuery()
             ->condition('status', 1)
             ->condition('uid', $uid)
+            ->accessCheck(TRUE)
             ->sort('field_date_of_ride');
-
         $query_result = $query->execute();
 
         // Load registrations for this user

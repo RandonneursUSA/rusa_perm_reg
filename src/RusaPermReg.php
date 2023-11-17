@@ -56,8 +56,8 @@ class RusaPermReg {
 	 public function query($uid) {
 		$query = $this->storage->getQuery()
             ->condition('status', 1)
-            ->condition('uid', $uid);
-  
+            ->condition('uid', $uid)
+            ->accessCheck(TRUE);
         $query_result = $query->execute();
 
         // Store registrations keyed by year
