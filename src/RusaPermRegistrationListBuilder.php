@@ -81,6 +81,7 @@ class RusaPermRegistrationListBuilder extends EntityListBuilder {
     $total = $this->getStorage()
       ->getQuery()
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
 
     $type = $this->type === 'rusa_perm_registration' ? 'Program' : 'Ride';

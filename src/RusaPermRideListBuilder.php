@@ -29,7 +29,7 @@ class RusaPermRideListBuilder extends EntityListBuilder {
    */
   protected $redirectDestination;
   
-  protected limit = 20;
+  protected $limit = 20;
 
   /**
    * Constructs a new RusaPermRegistrationListBuilder object.

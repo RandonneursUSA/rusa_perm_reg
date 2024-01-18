@@ -4,6 +4,7 @@ namespace Drupal\rusa_perm_reg\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
 
 /**
  * Form controller for the rusa perm registration entity edit forms.
