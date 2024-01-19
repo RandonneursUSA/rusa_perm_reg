@@ -70,6 +70,7 @@ class RusaPermRideListBuilder extends EntityListBuilder {
     $total = $this->getStorage()
       ->getQuery()
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
 
     $build['summary']['#markup'] = $this->t('Total Permanent Ride registrations: @total', ['@total' => $total]);
