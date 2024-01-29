@@ -173,7 +173,7 @@ class ResultSubmit extends FormBase {
             '#options'  => [
                 'dns' => $this->t('Did not start'),
                 'dnf' => $this->t('Did not finish,  or finished in more than %time.', 
-                    ['%time' => $ResultSubmit::hours_and_minutes($this->time)]),
+                    ['%time' => ResultSubmit::hours_and_minutes($this->time)]),
                 'fin' => $this->t('Completed the ride in'),
              ],
              '#default_value' => 'fin',
