@@ -216,10 +216,14 @@ class RusaPermSelectForm extends ConfirmFormBase {
             }
             else {
                 foreach ($this->perms as $pid => $perm) {
-                    $row = [
+                    $dist_display = $perm->dist;
+                    if($perm->dist_unpaved > 0){
+			$dist_display .= " ($perm->dist_unpaved)";
+		    }
+		    $row = [
                         $perm->pid,
                         $perm->startstate . ': ' . $perm->startcity,
-                        $perm->dist,
+                        $dist_display,
                         $perm->climbing,
                         $perm->name,
                         $perm->statelist,
@@ -245,7 +249,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
             
                 $form['select'] = [
                     '#type'     => 'table',
-                    '#header'   => ['Route #', 'Location', 'Km', 'Climb (ft.)', 'Name', 'States','Last reviewed', 'Description'],
+                    '#header'   => ['Route #', 'Location', 'Km (unpaved)', 'Climb (ft.)', 'Name', 'States','Last reviewed', 'Description'],
                     '#rows'     => $rows,
                     '#responsive' => TRUE,
                     '#attributes' => ['class' => ['rusa-table']],
@@ -453,10 +457,17 @@ class RusaPermSelectForm extends ConfirmFormBase {
         $url->setOption('attributes',  ['target' => '_blank']);
         $reslink = Link::fromTextAndUrl("View previous results", $url)->toString();
 
+        $max_time_allowed = ResultSubmit::hours_and_minutes(ResultSubmit::calculate_time($perm->dist, $perm->dist_unpaved));
+        $dist_display = $perm->dist;
+        if($perm->dist_unpaved > 0){
+            $dist_display .= " (Unpaved:$perm->dist_unpaved)";
+            $max_time_allowed .= " (may be less depending on actual distance ridden on gravel)"; 
+	    }
 		$rows = [
             ['Route #', ['data' => "$pid   <-- Copy this so you can paste it in the waiver.", 'class' => ['rusa-em']]],
             ['Route name',      $perm->name],
-            ['Distance (km)',   $perm->dist], 
+            ['Distance (km)',   $dist_display], 
+            ['Max ride time',   $max_time_allowed],
             ['Shape',           $ptypes[$perm->type]],  
             ['Climbing (ft)',   $perm->climbing],
             ['Location',        $loc],

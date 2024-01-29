@@ -249,17 +249,17 @@ class RusaPermRegForm extends FormBase {
     }
 
    
-	/**
-	 * Get a table of current registrations
-     *
-     */
-     protected function get_current_registrations($ridedata) {
+    /**
+    * Get a table of current registrations
+    *
+    */
+    protected function get_current_registrations($ridedata) {
         $rows = [];
 		
-		// Step through each registration
-		foreach ($ridedata as $id => $reg) {
-			$row = [];
-	        $links = [];
+        // Step through each registration
+        foreach ($ridedata as $id => $reg) {
+            $row = [];
+            $links = [];
 
             // Build the RWGPS link
             if (!empty($reg['url'])) {
@@ -268,10 +268,10 @@ class RusaPermRegForm extends FormBase {
                 $reg['url'] = Link::fromTextAndUrl('Ride With GPS', $url)->toString();
             }
  
-			// Add the data
-			foreach($reg as $key => $val) {
-				$row[] = $val;
-			}
+            // Add the data
+            foreach($reg as $key => $val) {
+                $row[] = $val;
+            }
             
             // If ridedate is future we show cancel
             if ($reg['ride_date'] > date('Y-m-d')) {
@@ -286,57 +286,62 @@ class RusaPermRegForm extends FormBase {
           
             else {
                 $url = 
-			    $links['results'] = [
-				    'title' => $this->t('Submit results'),
-				    'url'  => Url::fromRoute('rusa_perm.submit', ['regid' => $id]),
-			    ];
+                $links['results'] = [
+                    'title' => $this->t('Submit results'),
+                    'url'  => Url::fromRoute('rusa_perm.submit', ['regid' => $id]),
+	        ];
             }
            
 
-			// Add operations links
-			$row[] = [ 
-				'data' => [
-					'#type' => 'operations', 
-					'#links' => $links,
-			   ],
-			];
+            // Add operations links
+            $row[] = [ 
+                'data' => [
+                '#type' => 'operations', 
+                '#links' => $links,
+                ],
+            ];
 
-			$rows[] = $row;
-		};
+            $rows[] = $row;
+	};
    
-		return [
-			'#type'    => 'table',
-			'#header'   => ['Route #', 'Ride Date', 'Name', 'Km', 'Climb (ft.)', 'Description', 'Route', 'Operations'],
-			'#rows'     => $rows,
-			'#responsive' => TRUE,
-			'#attributes' => ['class' => ['rusa-table']],
-		];
-	}
+        return [
+            '#type'     => 'table',
+            '#header'   => ['Route #', 'Ride Date', 'Name', 'Km (unpaved)', 'Climb (ft.)', 'Description', 'Route', 'Operations'],
+            '#rows'     => $rows,
+            '#responsive' => TRUE,
+            '#attributes' => ['class' => ['rusa-table']],
+        ];
+    }
 	
 	
-	/**
-	 * Get a table of current registrations
-     *
-     */
-     protected function get_perm($pid) {
+    /**
+    * Get a table of current registrations
+    *
+    */
+    protected function get_perm($pid) {
         
-		$perm = $this->rideregdata->getPerm($pid);
-		$row = [
+        $perm = $this->rideregdata->getPerm($pid);
+
+        $dist_display = $perm->dist;
+        if($perm->dist_unpaved > 0){
+            $dist_display .= " ($perm->dist_unpaved u)";
+        }
+        $row = [
             'pid'       => $pid,
             'pname'     => $perm->name,
-            'pdist'     => $perm->dist, 
+            'pdist'     => $dist_display, 
             'pclimb'    => $perm->climbing, 
             'pdesc'     => $perm->description,
         ];
 		
-		return [
-			'#type'    => 'table',
-			'#header'   => ['Route #', 'Name', 'Km', 'Climb (ft.)', 'Description' ],
-			'#rows'     => [$row],
-			'#responsive' => TRUE,
-			'#attributes' => ['class' => ['rusa-table']],
-		];
-	}
+	return [
+		'#type'    => 'table',
+		'#header'   => ['Route #', 'Name', 'Km', 'Climb (ft.)', 'Description' ],
+		'#rows'     => [$row],
+		'#responsive' => TRUE,
+		'#attributes' => ['class' => ['rusa-table']],
+	];
+    }
 	
 	
     /**
