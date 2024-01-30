@@ -163,7 +163,7 @@ class ResultSubmit extends FormBase {
         //}
 
         $time_allowed_display = ResultSubmit::hours_and_minutes($this->time);
-        if($form_state->getValue('unpaved_actual') > 0 && $form_state->getValue('unpaved_actual') < $dist_unpaved){
+        if($form_state->isSubmitted() && $form_state->getValue('unpaved_actual') < $dist_unpaved){
             $recalc_time = ResultSubmit::calculate_time($perm->dist, $form_state->getValue('unpaved_actual')); 
             $time_allowed_display = ResultSubmit::hours_and_minutes($recalc_time);
         }
