@@ -148,32 +148,37 @@ class ResultSubmit extends FormBase {
 
 
         	
-	if($perm->type == 'PP'){
-	    $form['dummytext1'] = [
-                '#type'  => 'item',
-		'#markup' => $this->t('<b><i>Required - Indicate direction this route was ridden:</i></b>'),
-	    ];
-            $form['reversed'] = [
-                '#type'  => 'radios',
-                '#options' => [
-                     '0' => $this->t('Forward'),
-                     '1' => $this->t('Reverse'),
-                 ],
-            ];
+        //if($perm->type == 'PP'){
+        //    $form['dummytext1'] = [
+        //        '#type'  => 'item',
+        //           '#markup' => $this->t('<b><i>Required - Indicate direction this route was ridden:</i></b>'),
+        //        ];
+        //    $form['reversed'] = [
+        //        '#type'  => 'radios',
+        //        '#options' => [
+        //             '0' => $this->t('Forward'),
+        //             '1' => $this->t('Reverse'),
+        //         ],
+        //    ];
+        //}
+
+        $time_allowed_display = ResultSubmit::hours_and_minutes($this->time);
+        if($form_state->getValue('unpaved_actual') > 0 && $form_state->getValue('unpaved_actual') < $dist_unpaved){
+            $recalc_time = ResultSubmit::calculate_time($perm->dist, $form_state->getValue('unpaved_actual')); 
+            $time_allowed_display = ResultSubmit::hours_and_minutes($recalc_time);
         }
 
-
-	$form['dummytext2'] = [
+        $form['dummytext2'] = [
             '#type'  => 'item',
-	    '#markup' => $this->t('<b><i>Please indicate status of ride:</i></b>'),
-	];
+            '#markup' => $this->t('<b><i>Please indicate status of ride:</i></b>'),
+        ];
         // Display some radio buttons        
         $form['radio'] = [
             '#type'     => 'radios',
             '#options'  => [
                 'dns' => $this->t('Did not start'),
                 'dnf' => $this->t('Did not finish,  or finished in more than %time.', 
-                    ['%time' => ResultSubmit::hours_and_minutes($this->time)]),
+                    ['%time' => $time_allowed_display]),
                 'fin' => $this->t('Completed the ride in'),
              ],
              '#default_value' => 'fin',
@@ -246,9 +251,9 @@ class ResultSubmit extends FormBase {
 				$form_state->setErrorByName('hours', $this->t('It appears results have already been submitted for this ride. Please check your results.'));
 				 $this->getLogger('rusa_perm_reg')->warning("Results already submitted for registration ID %regid.", ['%regid' => $this->reg->id()]);
 			}
-            if ($form_state->getValue('permtype') == 'PP' && $form_state->getValue('reversed') == ''){
-	            $form_state->setErrorByName('direction', $this->t('Direction is required'));
-	        }
+            //if ($form_state->getValue('permtype') == 'PP' && $form_state->getValue('reversed') == ''){
+            //     $form_state->setErrorByName('direction', $this->t('Direction is required'));
+            //}
             // If radio = completed and time is empty
             if ($form_state->getValue('hours') < 2) {
                 $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
@@ -331,7 +336,7 @@ class ResultSubmit extends FormBase {
                 'drupal'            => 1,
                 'rider1-dnf'        => $form_state->getValue('radio') === 'dnf' ? 'true' : 'false',
                 'drupal-regid'      => $this->reg->id,
-                'reversed'          => $form_state->getValue('reversed'),
+                //'reversed'          => $form_state->getValue('reversed'),
             ];
             //'rider1-unpaved_actual' => $form_state->getValue('unpaved_actual'),
             if($form_state->getValue('dist_unpaved') > 0){
