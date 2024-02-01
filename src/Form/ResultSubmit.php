@@ -340,7 +340,7 @@ class ResultSubmit extends FormBase {
             ];
             //'rider1-unpaved_actual' => $form_state->getValue('unpaved_actual'),
             if($form_state->getValue('dist_unpaved') > 0){
-                $results['rider1-unpaved_actual'] = $form_state->getValue('unpaved_actual');
+                $results['dist_unpaved_actual'] = $form_state->getValue('unpaved_actual');
             }
 
             // Log that we are submitting this result
