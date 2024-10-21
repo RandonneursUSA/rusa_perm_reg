@@ -134,14 +134,14 @@ class RusaPermController  extends ControllerBase {
             }
             catch(SmartwaiverHTTPException $se) {
                 $attempts++;
-                sleep(2);
+                sleep($attempts*2);
                 continue;
         
             }
             break;
-        } while($attempts < 5);
+        } while($attempts < 6);
         
-        if ($attempts == 5) {
+	if ($attempts == 6) {
             $this->getLogger('rusa_perm_reg')->error('Could not retreive waiver %waiver.', ['%waiver' => $wid]);
             $this->messenger()->addError('Could not retrieve waiver, please try registering again.');
         }
