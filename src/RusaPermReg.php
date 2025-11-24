@@ -91,8 +91,16 @@ class RusaPermReg {
                 'field_registration_year' => [
                     'value'     => $year . '-01-01',
                     'end_value' => $year . '-12-31',
-                ],                        
-            ]);               
+                ],
+            ]);
+        # 2025-11-24 - CM
+        # Short-circuit the registration workflow when the perms program is
+        # free. Ideally we would look up the cost of the program. Use 2026-12-01
+        # as a cutoff date to force looking at this code again in the future.
+        if (date("Y-m-d") < '2026-12-01') {
+            $reg->set('field_payment_received', TRUE);
+            $reg->set('field_date_payment_received', date('Y-m-d', time()));
+        }
         $reg->save();
         return $reg;
     }
