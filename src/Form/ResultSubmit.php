@@ -104,10 +104,7 @@ class ResultSubmit extends FormBase {
         $perm = $pobj->getPermanent($pid);
         
 	// Save the time calculation
-        $dist_unpaved = 0;
-        if ($perm->dist_unpaved > 0){
-            $dist_unpaved = $perm->dist_unpaved;
-        }
+        $dist_unpaved = $perm->dist_unpaved ?? 0;
         $this->time = ResultSubmit::calculate_time($perm->dist, $dist_unpaved);
 
 

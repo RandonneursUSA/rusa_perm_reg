@@ -457,7 +457,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
         $url->setOption('attributes',  ['target' => '_blank']);
         $reslink = Link::fromTextAndUrl("View previous results", $url)->toString();
 
-        $max_time_allowed = ResultSubmit::hours_and_minutes(ResultSubmit::calculate_time($perm->dist, $perm->dist_unpaved));
+        $max_time_allowed = ResultSubmit::hours_and_minutes(ResultSubmit::calculate_time($perm->dist, $perm->dist_unpaved ?? 0));
         $dist_display = $perm->dist;
         if($perm->dist_unpaved > 0){
             $dist_display .= " (Unpaved:$perm->dist_unpaved)";
