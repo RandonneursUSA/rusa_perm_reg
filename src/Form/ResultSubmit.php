@@ -434,7 +434,7 @@ class ResultSubmit extends FormBase {
        else                  { $kmph = 200.0/24.0; } /* 200km per day */
 
        //One extra minute per unpaved km
-       return (floor(60 * ($dist / $kmph)) + $dist_unpaved);
+       return (floor(60 * ($dist / $kmph)) + (int) $dist_unpaved);
     }
 
     /**
