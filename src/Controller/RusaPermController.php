@@ -124,9 +124,22 @@ class RusaPermController  extends ControllerBase {
 
         $request   = \Drupal::request();
         $query     = $request->query; 
-    	$wid       = $query->get('waiverid');    	
+    	$wid       = $query->get('waiverid');
 
-        // Get the waiver   	
+		// Get the current user's $mid (RUSA #)
+		// Note: Creating another variable $umid so as not to conflict with $mid below
+    	$umid = $this->get_user_mid($this->currentUser);
+    	
+		// Create the registration entity with the data we have thus far	
+		$reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
+			[
+				'field_waiver_id'       => $wid, 
+				'field_rusa_member_id'  => $umid,
+			]);
+		$reg->save();
+    	    	
+
+        // Now attempt to retreive  the waiver   	
         $attempts = 1;
         do {
             try {
@@ -165,6 +178,7 @@ class RusaPermController  extends ControllerBase {
             $date = $cfields['Ride Date YYYY-MM-DD'];
      
             // Make sure mid matches what we passed in the tags
+            // Note: Could also check $umid which we fteched at the beginning. They should all be the same
             if ($mid != $wmid) {
                 $this->messenger()->addWarning($this->t('RUSA # entered in waiver is not the same as the rider who submitted the form.'));
                 return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
@@ -206,15 +220,9 @@ class RusaPermController  extends ControllerBase {
             }            
             
             if ($good_to_save) {            
-
-                // Save the registration
-                $reg = \Drupal::entityTypeManager()->getStorage('rusa_perm_reg_ride')->create(
-                    [
-                        'field_date_of_ride'    => $date,
-                        'field_perm_number'     => $pid,
-                        'field_waiver_id'       => $wid, 
-                        'field_rusa_member_id'  => $mid,
-                    ]);
+                // Update  the registration
+                $reg->set('field_date_of_ride', $date);
+                $reg->set('field_perm_number', $pid);
                 $reg->save();
             }
             else {
@@ -226,6 +234,19 @@ class RusaPermController  extends ControllerBase {
 		// Return to user profile Permanents tab
         return $this->redirect('rusa_perm.reg',['user' => $this->currentUser->id()]);
     }
+	
+	/** 
+     * Get user info
+     *
+     */
+    protected function get_user_mid($current_user) {
+        $user_id   = $current_user->id(); 
+        $user      = User::load($user_id);
+
+        $mid = $user->get('field_rusa_member_id')->getValue()[0]['value'];
+        return($mid);
+    }
+	
 	
     
     /**
