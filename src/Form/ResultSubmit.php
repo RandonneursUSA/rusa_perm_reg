@@ -111,13 +111,19 @@ class ResultSubmit extends FormBase {
         // Get the perm info we want to show in a table
         $dist_display=$perm->dist;	
         if ($perm->dist_unpaved > 0){
-            $dist_display .= " (unpaved:$perm->dist_unpaved)";
-        }    
+            $dist_display .= " (unpaved: $perm->dist_unpaved)";
+        }
+        $climbing_display =
+            number_format($perm->climbing) .
+            "' (reverse: " .
+            number_format($perm->climbing - $perm->net_elevation) .
+            "')";
         $rows = [
             ['Ride date',      $ride_date],
             ['Route #',        $pid],
             ['Route name',     $perm->name],
             ['Distance (km)',  $dist_display],
+            ['Climbing (ft)',  $climbing_display],
             ['RUSA #',         $this->uinfo['mid']],
             ['Name',           $this->uinfo['name']],
         ];
@@ -142,22 +148,8 @@ class ResultSubmit extends FormBase {
         $form['permtype'] = ['#type' => 'hidden', '#value' => $perm->type,];
         $form['dist'] = ['#type' => 'hidden', '#value' => $perm->dist,];
         $form['dist_unpaved'] = ['#type' => 'hidden', '#value' => $perm->dist_unpaved,];
-
-
-        	
-        //if($perm->type == 'PP'){
-        //    $form['dummytext1'] = [
-        //        '#type'  => 'item',
-        //           '#markup' => $this->t('<b><i>Required - Indicate direction this route was ridden:</i></b>'),
-        //        ];
-        //    $form['reversed'] = [
-        //        '#type'  => 'radios',
-        //        '#options' => [
-        //             '0' => $this->t('Forward'),
-        //             '1' => $this->t('Reverse'),
-        //         ],
-        //    ];
-        //}
+        $form['perm_climbing'] = ['#type' => 'hidden', '#value' => $perm->climbing,];
+        $form['perm_net_elevation'] = ['#type' => 'hidden', '#value' => $perm->net_elevation,];
 
         $time_allowed_display = ResultSubmit::hours_and_minutes($this->time);
         if($form_state->isSubmitted() && $form_state->getValue('unpaved_actual') < $dist_unpaved){
@@ -165,7 +157,7 @@ class ResultSubmit extends FormBase {
             $time_allowed_display = ResultSubmit::hours_and_minutes($recalc_time);
         }
 
-        $form['dummytext2'] = [
+        $form['dummytext1'] = [
             '#type'  => 'item',
             '#markup' => $this->t('<b><i>Please indicate status of ride:</i></b>'),
         ];
@@ -194,17 +186,50 @@ class ResultSubmit extends FormBase {
             '#size'  => 20,
         ];
 
+        // Optional input to report lower unpaved distance.
         if($perm->dist_unpaved > 0){
-            $form['dummytext3'] = [
+            $form['dummytext2'] = [
                 '#type'  => 'item',
 		'#markup' => $this->t('<b><i>Please indicate actual unpaved distance if less than '. $perm->dist_unpaved .' ridden (changing this value will affect time allowed):</i></b>'),
 	    ];
             $form['unpaved_actual'] = [
             '#type'  => 'textfield',
-            '#title' => $this->t('Actual unpaved(km):'),
+            '#title' => $this->t('Actual unpaved (km):'),
             '#size'  => 10,
             '#default_value' => $perm->dist_unpaved,
         ];
+        }
+
+        // Climbing inputs used starting in 2026.
+        if ($ride_date > '2026') {
+          // Optional input to report lower climbing.
+          $form['dummytext3'] = [
+            '#type'  => 'item',
+            '#markup' => $this->t('<b><i>Please indicate actual climbing (only if lower due to free-routing):</i></b>'),
+          ];
+          $form['climbing_actual'] = [
+            '#type'  => 'textfield',
+            '#title' => $this->t('Actual climbing (ft):'),
+            '#size'  => 10,
+          ];
+
+          // Forward/Reverse indicator.
+          $form['dummytext4'] = [
+            '#type'  => 'item',
+            '#markup' => $this->t('<b><i>Please indicate the direction the route was ridden:</i></b>'),
+          ];
+          $form['reversed'] = [
+            '#type'  => 'radios',
+            '#options' => [
+              '0' => $this->t('Forward'),
+              '1' => $this->t('Reverse'),
+            ],
+          ];
+          // Default to Forward direction if there isn't much net elevation
+          // difference so that it's faster to submit results in the common case.
+          if (abs($perm->net_elevation) <= 50) {
+            $form['reversed']['#default_value'] = '0';
+          }
         }
 
         // Action buttons
@@ -236,54 +261,69 @@ class ResultSubmit extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-   
-        $action = $form_state->getTriggeringElement();
-        if ($action['#value'] == "Cancel") {
-            $form_state->setRedirect('rusa_perm.reg',['user' => $this->uinfo['uid']]);           
-        }
 
-        elseif ($form_state->getValue('radio') == 'fin') {
-        	// Make sure the form wqas not submitted from another window
-			if (! $this->reg->get('field_rsid')->isEmpty()) {
-				$form_state->setErrorByName('hours', $this->t('It appears results have already been submitted for this ride. Please check your results.'));
-				 $this->getLogger('rusa_perm_reg')->warning("Results already submitted for registration ID %regid.", ['%regid' => $this->reg->id()]);
-			}
-            //if ($form_state->getValue('permtype') == 'PP' && $form_state->getValue('reversed') == ''){
-            //     $form_state->setErrorByName('direction', $this->t('Direction is required'));
-            //}
-            // If radio = completed and time is empty
-            if ($form_state->getValue('hours') < 2) {
-                $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
-            }           
-            else {
-                //recalc time allowance if we know this is a route with gravel, ie. unpaved dist > 0
-                if($form_state->getValue('dist_unpaved') > 0){
-                    $this->time = ResultSubmit::calculate_time($form_state->getValue('dist'), $form_state->getValue('unpaved_actual')); 
-                    if($form_state->getValue('unpaved_actual') > $form_state->getValue('dist_unpaved')){
-	                    $form_state->setErrorByName('maxgravelexceeded', $this->t('Reported gravel distance greater than specified in route'));
-                    }
-                }
-                // Validate time within limit here
-                $time = ($form_state->getValue('hours') * 60 ) + $form_state->getValue('minutes');
-                if ($time > $this->time) {
-                    // Time has exceeded limit
-                    
-                    // This is the only way I found to set these values
-                    $input = $form_state->getUserInput();
-                    $input['radio'] = 'fin';
-                    $input['hours'] = '';
-                    $input['minutes'] = '';
-                    $form_state->setUserInput($input);
-                    
-                    $this->messenger()->addError($this->t('Your finish time of %fintime exceeds the maximum allowed time of %time.', 
-                        ['%fintime' => ResultSubmit::hours_and_minutes($time),'%time' => ResultSubmit::hours_and_minutes($this->time)]));
-                    
-                    // Go back to the form
-                    $form_state->setRebuild();
-                    
-                }     
-            }
+      $action = $form_state->getTriggeringElement();
+      if ($action['#value'] == "Cancel") {
+        $form_state->setRedirect('rusa_perm.reg', ['user' => $this->uinfo['uid']]);           
+      }
+
+      elseif ($form_state->getValue('radio') == 'fin') {
+        // Make sure the form was not submitted from another window
+        if (! $this->reg->get('field_rsid')->isEmpty()) {
+          $form_state->setErrorByName('hours', $this->t('It appears results have already been submitted for this ride. Please check your results.'));
+          $this->getLogger('rusa_perm_reg')->warning("Results already submitted for registration ID %regid.", ['%regid' => $this->reg->id()]);
+          return;
         }
+        // If radio = completed and time is empty
+        if ($form_state->getValue('hours') < 2) {
+          $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
+          return;
+        }           
+        //recalc time allowance if we know this is a route with gravel, ie. unpaved dist > 0
+        if($form_state->getValue('dist_unpaved') > 0){
+          $this->time = ResultSubmit::calculate_time($form_state->getValue('dist'), $form_state->getValue('unpaved_actual')); 
+          if($form_state->getValue('unpaved_actual') > $form_state->getValue('dist_unpaved')){
+            $form_state->setErrorByName('maxgravelexceeded', $this->t('Reported gravel distance greater than specified in route.'));
+            return;
+          }
+        }
+        // Validate time within limit here
+        $time = ($form_state->getValue('hours') * 60 ) + $form_state->getValue('minutes');
+        if ($time > $this->time) {
+          // Time has exceeded limit
+
+          // This is the only way I found to set these values
+          $input = $form_state->getUserInput();
+          $input['radio'] = 'fin';
+          $input['hours'] = '';
+          $input['minutes'] = '';
+          $form_state->setUserInput($input);
+
+          $this->messenger()->addError($this->t('Your finish time of %fintime exceeds the maximum allowed time of %time.', 
+                ['%fintime' => ResultSubmit::hours_and_minutes($time),'%time' => ResultSubmit::hours_and_minutes($this->time)]));
+
+          // Go back to the form
+          $form_state->setRebuild();
+          return;
+        }
+        // Apply climbing validation starting in 2026.
+        $ride_date = $this->reg->get('field_date_of_ride')->getValue()[0]['value'];
+        if ($ride_date > '2026') {
+          $reversed = $form_state->getValue('reversed');
+          if ($reversed == '') {
+            $form_state->setErrorByName('reversed', $this->t('Direction is required.'));
+            return;
+          }
+          $max_climbing = $form_state->getValue('perm_climbing');
+          if ($reversed == '1') {
+            $max_climbing -= $form_state->getValue('perm_net_elevation');
+          }
+          if ($form_state->getValue('climbing_actual') > $max_climbing) {
+            $form_state->setErrorByName('climbing_actual', $this->t('Reported climbing greater than specified in route.' . '[' . $max_climbing . ']'));
+            return;
+          }
+        }
+      }
     } // End function validate
 
 
@@ -333,11 +373,15 @@ class ResultSubmit extends FormBase {
                 'drupal'            => 1,
                 'rider1-dnf'        => $form_state->getValue('radio') === 'dnf' ? 'true' : 'false',
                 'drupal-regid'      => $this->reg->id,
-                //'reversed'          => $form_state->getValue('reversed'),
             ];
-            //'rider1-unpaved_actual' => $form_state->getValue('unpaved_actual'),
             if($form_state->getValue('dist_unpaved') > 0){
                 $results['dist_unpaved_actual'] = $form_state->getValue('unpaved_actual');
+            }
+            // Submit climbing info starting in 2026.
+            $ride_date = $this->reg->get('field_date_of_ride')->getValue()[0]['value'];
+            if ($ride_date > '2026') {
+                $results['reversed'] = $form_state->getValue('reversed');
+                $results['climbing_actual'] = $form_state->getValue('climbing_actual');
             }
 
             // Log that we are submitting this result
