@@ -20,9 +20,14 @@ function rusa_perm_reg_theme() {
       			'template' => 'rusa-perm-ride-reg',
     		],
 	    ];
-
 }
 
+/**
+ * Implements hook_page_attachments
+ */
+function rusa_perm_reg_page_attachments(array &$variables) : void {
+  $variables['#attached']['library'][] = 'rusa_perm_reg/rusa_perm_js';
+}
 
 /**
  * Prepares variables for rusa perm registration templates.
@@ -61,5 +66,4 @@ function template_preprocess_rusa_perm_ride_reg(array &$variables) {
         $variables['title'] = 'Perm Program Registration for ' . $owner->getAccountName(); 
     }
  }
-
 

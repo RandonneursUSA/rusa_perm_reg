@@ -4,6 +4,12 @@ rusa_perm_style:
     theme:
       css/rusa_perm.css: {}
 
+rusa_perm_js:
+  version: 1.x
+  js:
+    js/rusa_perm_reload.js: {}
+
+
 # I think this is for the embedded SW button
 #
 #smartwaiver:
