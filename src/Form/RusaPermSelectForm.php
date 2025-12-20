@@ -169,6 +169,23 @@ class RusaPermSelectForm extends ConfirmFormBase {
                     '600' => '600+ km'],
             ];
 
+            // Minimum unpaved
+            $form['min_dist_unpaved'] = [
+                '#type'          => 'textfield',
+                '#title'         => $this->t('Min unpaved'),
+                '#size'          => '10',
+                '#default_value' => '0',
+            ];
+
+            // Minimum climbing
+            $form['min_climbing'] = [
+                '#type'          => 'textfield',
+                '#title'         => $this->t('Min climbing (ft)'),
+                '#size'          => '10',
+                '#default_value' => '0',
+            ];
+
+            // Shape
             $form['type'] = [
                 '#type'     => 'select',
                 '#title'    => $this->t('Shape'),
@@ -179,7 +196,6 @@ class RusaPermSelectForm extends ConfirmFormBase {
                     'PP'    => 'Point to Point',
                 ],
             ];
-                    
 
             // Name
             $form['name'] = [
@@ -249,7 +265,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
             
                 $form['select'] = [
                     '#type'     => 'table',
-                    '#header'   => ['Route #', 'Location', 'Km (unpaved)', 'Climb (ft.)', 'Name', 'States','Last reviewed', 'Description'],
+                    '#header'   => ['Route #', 'Location', 'Km (unpaved)', 'Climb (ft)', 'Name', 'States','Last reviewed', 'Description'],
                     '#rows'     => $rows,
                     '#responsive' => TRUE,
                     '#attributes' => ['class' => ['rusa-table']],
@@ -332,20 +348,24 @@ class RusaPermSelectForm extends ConfirmFormBase {
             }
         
             // Get all active perms
-            $permobj = new RusaPermanents($params);            
+            $permobj = new RusaPermanents($params);
             
             // Now set the filters
             $filters['active'] = TRUE; // Only active perms
             $filters['nosr']   = TRUE; // No SR600s
-            
+
             if ( ! empty($values['dist'])) {
                 $filters['dist'] = $values['dist'];
             }
-            
+            if ( ! empty($values['min_dist_unpaved'])) {
+                $filters['min_dist_unpaved'] = $values['min_dist_unpaved'];
+            }
+            if ( ! empty($values['min_climbing'])) {
+                $filters['min_climbing'] = $values['min_climbing'];
+            }
             if ( (! empty($values['type'])) && ($values['type'] != 'ALL')) {
                 $filters['type'] = $values['type'];
             }
-            
             if ( ! empty($values['name'])) {
                 $filters['name'] = $values['name'];
             }
