@@ -273,12 +273,12 @@ class ResultSubmit extends FormBase {
         return;
       }
       // If radio = completed and time is empty
-      if ($form_state->getValue('hours') < 2) {
+      if ((int)$form_state->getValue('hours') < 2) {
         $form_state->setErrorByName('hours', $this->t('If you completed the ride you must supply your time'));
         return;
       }
       //recalc time allowance if we know this is a route with gravel, ie. unpaved dist > 0
-      if ($form_state->getValue('dist_unpaved') > 0) {
+      if ((int)$form_state->getValue('dist_unpaved') > 0) {
         $this->time = ResultSubmit::calculate_time($form_state->getValue('dist'), $form_state->getValue('unpaved_actual'));
         if ($form_state->getValue('unpaved_actual') > $form_state->getValue('dist_unpaved')) {
           $form_state->setErrorByName('maxgravelexceeded', $this->t('Reported gravel distance greater than specified in route.'));
@@ -286,7 +286,7 @@ class ResultSubmit extends FormBase {
         }
       }
       // Validate time within limit here
-      $time = ($form_state->getValue('hours') * 60) + $form_state->getValue('minutes');
+      $time = ((int)$form_state->getValue('hours') * 60) + (int)$form_state->getValue('minutes');
       if ($time > $this->time) {
         // Time has exceeded limit
 
@@ -398,21 +398,23 @@ class ResultSubmit extends FormBase {
         $this->getLogger('rusa_perm_reg')->notice("Registration entity @reg updated with result id @res ",
           ['@reg' => $this->reg->id(), '@res' => $response->rsid]);
 
-        // Give warning if not enough time elpased between ride registration and result submit
-        $regdate = $this->reg->get('created')->value; // Timestamp of ride registration
-        $now = time();                                // Timestamp of result submission
-        $diff = $now - $regdate;                      // Seconds between the two
+        // If the submission is for a finished ride, give warning if not enough
+        // time elpased between ride registration and result submit.
+        if ($results['rider1-dnf'] == 'false') {
+          $regdate = $this->reg->get('created')->value; // Timestamp of ride registration
+          $now = time();                                // Timestamp of result submission
+          $diff = $now - $regdate;                      // Seconds between the two
 
-        $hours = $form_state->getValue('hours') * 60 * 60;
-        $minutes = $form_state->getValue('minutes') * 60;
-        $duration = $hours + $minutes;		          // Seconds of ride duration
+          $hours = (int)$form_state->getValue('hours') * 60 * 60;
+          $minutes = (int)$form_state->getValue('minutes') * 60;
+          $duration = $hours + $minutes;		          // Seconds of ride duration
 
-        if ($duration > $diff) {
-          $message = $this->settings['too_soon'];
-          $this->messenger()->addWarning($message);
-          $this->getLogger('rusa_perm_reg')->notice("Results submitted too soon for @reg", ['@reg' => $this->reg->id()]);
+          if ($duration > $diff) {
+            $message = $this->settings['too_soon'];
+            $this->messenger()->addWarning($message);
+            $this->getLogger('rusa_perm_reg')->notice("Results submitted too soon for @reg", ['@reg' => $this->reg->id()]);
+          }
         }
-
       }
       elseif (isset($response->errors)) {
         // Display error messages
