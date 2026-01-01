@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 
 @task
 def testdeploy(ctx=None, hostname="localhost"):
-    """Deploy the rusa_member module for testing on host 'hostname' (default=localhost)"""
+    """Deploy the rusa_perm_reg module for testing on host 'hostname' (default=localhost)"""
     rsync_command = (
         "rsync -e 'ssh -p555' -avc  --delete-after "
         "--exclude='.git/' --exclude='fabfile.py' --exclude='*.md' "
