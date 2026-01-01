@@ -37,14 +37,29 @@ function initializeReloadMonitor() {
 
     // Check every 10 seconds whether the current time is greater than or equal
     // to the target. Reload once that's the case.
-    const heartbeat = setInterval(() => {
+    const checkTime = () => {
         const currentTime = new Date();
         if (currentTime >= target) {
-            clearInterval(heartbeat);
             window.location.reload();
         }
-    }, 10000);
+    };
+    setInterval(checkTime, 10000);
+
+    // Handle mobile devices that ignore setInterval after the screen turns off.
+    // This triggers the moment the tab becomes active again
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            checkTime();
+        }
+    });
+    // Some mobile browsers treat returning to the app as a "focus" event.
+    window.addEventListener('focus', checkTime);
 }
 
-initializeReloadMonitor();
+// Start polling once the DOM is fully loaded.
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeReloadMonitor);
+} else {
+    initializeReloadMonitor();
+}
 
