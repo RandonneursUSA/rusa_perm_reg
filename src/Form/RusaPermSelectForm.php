@@ -399,7 +399,13 @@ class RusaPermSelectForm extends ConfirmFormBase {
     $uinfo['name'] = $user->get('field_display_name')->getValue()[0]['value'];
     $uinfo['fname'] = $user->get('field_first_name')->getValue()[0]['value'];
     $uinfo['lname'] = $user->get('field_last_name')->getValue()[0]['value'];
-    $uinfo['dob'] = str_replace('-', '', $user->get('field_date_of_birth')->getValue()[0]['value']);
+    $dob_field = $user->get('field_date_of_birth')->getValue();
+    if (isset($dob_field) && isset($dob_field[0])) {
+      $uinfo['dob'] = str_replace('-', '', $dob_field[0]['value']);
+    }
+    else {
+      $uinfo['dob'] = '';
+    }
     $uinfo['mid'] = $user->get('field_rusa_member_id')->getValue()[0]['value'];
     return ($uinfo);
   }
@@ -416,7 +422,7 @@ class RusaPermSelectForm extends ConfirmFormBase {
     $swurl .= '&wautofill_dobyyyymmdd=' . $this->uinfo['dob'];
     $swurl .= '&wautofill_tag=' . $this->uinfo['mid'] . ':' . $pid;
 
-    return $swurl;
+    return $swurl;        
   }
 
   /**
