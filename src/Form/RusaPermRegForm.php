@@ -34,6 +34,7 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\rusa_perm_reg\RusaPermReg;
 use Drupal\rusa_perm_reg\RusaRideRegData;
+use Drupal\rusa_perm_reg\RusaPermRegUtil;
 use Drupal\rusa_api\RusaPermanents;
 use Drupal\rusa_api\Client\RusaClient;
 
@@ -72,7 +73,7 @@ class RusaPermRegForm extends FormBase {
     public function __construct(AccountProxy $current_user) {
   
         // Store some account data 
-        $this->uinfo = $this->get_user_info($current_user->id());
+        $this->uinfo = RusaPermRegUtil::get_user_info($current_user);
         
         // Create a permReg object and inititate a query
         $this->permReg = new RusaPermReg();
@@ -231,24 +232,6 @@ class RusaPermRegForm extends FormBase {
 
     /* Private Functions */ 
 
-    /** 
-     * Get user info
-     *
-     */
-    protected function get_user_info($user_id) {
-        $user = User::load($user_id);
-
-        $uinfo['uid']     = $user_id;
-        $uinfo['name']    = $user->get('field_display_name')->getValue()[0]['value'];
-        $uinfo['fname']   = $user->get('field_first_name')->getValue()[0]['value'];
-        $uinfo['lname']   = $user->get('field_last_name')->getValue()[0]['value'];
-        $uinfo['dob']     = str_replace('-', '', $user->get('field_date_of_birth')->getValue()[0]['value']);
-        $uinfo['mid']     = $user->get('field_rusa_member_id')->getValue()[0]['value'];
-        $uinfo['expdate'] = $user->get('field_member_expiration_date')->getValue()[0]['value'];
-        return($uinfo);
-    }
-
-   
     /**
     * Get a table of current registrations
     *

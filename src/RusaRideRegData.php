@@ -42,12 +42,14 @@ class RusaRideRegData {
     $query_result = $query->execute();
 
     // Load registrations for this user
+    $this->regs = [];
     foreach ($query_result as $id) {
       $this->regs[] = $storage->load($id);
     }
   }
 
   public function get_registrations() {
+    $data = [];
     foreach ($this->regs as $reg) {
       // Get the perm data
       $pid = $reg->get('field_perm_number')->getValue()[0]['value'];

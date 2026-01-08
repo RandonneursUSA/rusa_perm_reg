@@ -27,6 +27,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\rusa_perm_reg\RusaPermRegUtil;
 use Drupal\rusa_perm_reg\RusaRideRegData;
 use Drupal\rusa_api\RusaPermanents;
 use Drupal\rusa_api\RusaPermResults;
@@ -63,7 +64,7 @@ class ResultSubmit extends FormBase {
   public function __construct(AccountProxy $current_user, EntityStorageInterface $rideRegStorage) {
     $this->currentUser = $current_user;
     $this->rideRegStorage = $rideRegStorage;
-    $this->uinfo = $this->get_user_info();
+    $this->uinfo = RusaPermRegUtil::get_user_info($current_user);    
     $this->settings = \Drupal::config('rusa_perm_ride.settings')->getRawData();
   }
 
@@ -441,23 +442,6 @@ class ResultSubmit extends FormBase {
     $this->reg->set('field_rsid', $rsid);
     $this->reg->set('status', 0);
     $this->reg->save();
-  }
-
-  /** 
-   * Get user info
-   *
-   */
-  protected function get_user_info() {
-    $user_id = $this->currentUser->id();
-    $user = User::load($user_id);
-
-    $uinfo['uid'] = $user_id;
-    $uinfo['name'] = $user->get('field_display_name')->getValue()[0]['value'];
-    $uinfo['fname'] = $user->get('field_first_name')->getValue()[0]['value'];
-    $uinfo['lname'] = $user->get('field_last_name')->getValue()[0]['value'];
-    $uinfo['dob'] = str_replace('-', '', $user->get('field_date_of_birth')->getValue()[0]['value']);
-    $uinfo['mid'] = $user->get('field_rusa_member_id')->getValue()[0]['value'];
-    return ($uinfo);
   }
 
   /**
