@@ -513,8 +513,7 @@ class RusaPermRegForm extends FormBase {
       $form['ridereg'] = $this->get_current_registrations($ridedata);
     }
 
-
-    $do_rde_reg = FALSE;
+    $do_ride_reg = FALSE;
     foreach ($this->regstatus as $year => $status) {
       if ($status['reg_exists'] && $status['payment']) {
         $do_ride_reg = TRUE;
