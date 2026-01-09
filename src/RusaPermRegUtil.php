@@ -44,8 +44,8 @@ class RusaPermRegUtil  {
       $uinfo['dob'] = '';
     }
     $uinfo['mid'] = $user->get('field_rusa_member_id')->getValue()[0]['value'];
+    $uinfo['expdate'] = $user->get('field_member_expiration_date')->getValue()[0]['value'];
     return ($uinfo);
   }
 
-} // End of class  
-
+} // End of class
